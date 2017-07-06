@@ -31,7 +31,9 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
     ax.set_ylabel(ylabel)
 
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
-    eff_exp  = spectrum._eff_exposure()  # cm^2 sec count phot^-1
+    no_mod  = np.ones(len(spectrum.arf.specresp))  # a non-model (flux=1)
+    eff_exp = spectrum.apply_resp(no_mod)
+    eff_exp /= (spectrum.exposure * spectrum.arf.fracexpo)  # cm^2 s count / phot?
     # Have to take account of zero values in effective exposure
     flux, f_err = np.zeros(len(eff_exp)), np.zeros(len(eff_exp))
     ii        = (eff_exp != 0.0)
