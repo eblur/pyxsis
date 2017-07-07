@@ -2,20 +2,16 @@
 
 import numpy as np
 
-ALLOWED_UNITS      = ['keV','angs','angstrom','kev']
-CONST_HC    = 12.398418573430595   # Copied from ISIS, [keV angs]
-UNIT_LABELS = dict(zip(ALLOWED_UNITS, ['Energy (keV)', 'Wavelength (angs)']))
+KEV      = ['kev', 'keV']
+ANGS     = ['angs', 'angstrom', 'Angstrom', 'angstroms', 'Angstroms']
 
-__all__ = ['plot_counts','plot_unfold','plot_model_flux']
+ALLOWED_UNITS = KEV + ANGS
 
-def _get_counts(spectrum, xunit='keV', **kwargs):
-    lo, hi, mid, cts = spectrum._change_units(xunit)
-    cts_err = np.sqrt(cts)
-    # Return plot data if the user wants it
-    return lo, hi, mid, cts, cts_err
+__all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
-    lo, hi, mid, cts, cts_err = _get_counts(spectrum, xunit=xunit, **kwargs)
+    lo, hi, mid, cts = spectrum._return_in_units(xunit)
+    cts_err = np.sqrt(cts)
 
     if perbin:
         dbin   = 1.0
@@ -25,28 +21,30 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
         ylabel = 'Counts %s$^{-1}$' % xunit
 
     ax.errorbar(mid, cts/dbin, yerr=cts_err/dbin,
-                ls='', marker=None, color='k', capsize=0, alpha=0.5)
+                ls='', markersize=0, color='k', capsize=0, alpha=0.5)
     ax.step(lo, cts/dbin, where='post', **kwargs)
-    ax.set_xlabel(UNIT_LABELS[xunit])
+    ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)
+    return
 
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
-    assert xunit in ALLOWED_UNITS
 
-    no_mod  = np.ones(len(spectrum.arf.specresp))  # a non-model (flux=1)
-    eff_exp = spectrum.apply_resp(no_mod)
-    # Have to take account of zero values in effective exposure
-    flux, f_err = np.zeros(len(eff_exp)), np.zeros(len(eff_exp))
-    ii        = (eff_exp != 0.0)
-    flux[ii]  = spectrum.counts[ii] / eff_exp[ii]
-    f_err[ii] = np.sqrt(spectrum.counts[ii]) / eff_exp[ii]
+    # Models will always be in keV bin units
+    no_mod  = np.ones(len(spectrum.arf.specresp))  # a non-model of ones (integrated)
+    eff_exp = spectrum.apply_resp(no_mod)  # non-counts per bin
 
     # Now deal with desired xunit
-    lo, hi, mid, cts = spectrum._change_units(xunit)
-    if spectrum.bin_unit != xunit:
-        flx, fe = flux[::-1], f_err[::-1]
+    assert xunit in ALLOWED_UNITS
+    lo, hi, mid, cts = spectrum._return_in_units(xunit)
+
+    flux, f_err = np.zeros(len(eff_exp)), np.zeros(len(eff_exp))
+    ii        = (eff_exp != 0.0)
+    if xunit in ANGS:
+        flux[ii] = cts[ii] / eff_exp[::-1][ii]
+        f_err[ii] = np.sqrt(cts[ii]) / eff_exp[::-1][ii]
     else:
-        flx, fe = flux, f_err
+        flux[ii] = cts[ii] / eff_exp[ii]
+        f_err[ii] = np.sqrt(cts[ii]) / eff_exp[ii]
 
     if perbin:
         dbin   = 1.0
@@ -56,21 +54,20 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
         ylabel = 'Flux [phot cm$^{-2}$ s$^{-1}$ %s$^{-1}$]' % xunit
 
     # Now plot it
-    ax.errorbar(mid, flx/dbin, yerr=fe/dbin,
+    ax.errorbar(mid, flux/dbin, yerr=f_err/dbin,
                 ls='', marker=None, color='k', capsize=0, alpha=0.5)
-    ax.step(lo, flx/dbin, where='post', **kwargs)
-    ax.set_xlabel(UNIT_LABELS[xunit])
+    ax.step(lo, flux/dbin, where='post', **kwargs)
+    ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)
 
 def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
     assert xunit in ALLOWED_UNITS
 
-    no_mod  = np.ones(len(spectrum.arf.specresp))  # a non-model (flux=1)
-    lo, hi, mid, cts = spectrum._change_units(xunit)
-    elo, ehi, emid, cts = spectrum._change_units('keV')
-    mflux = model.calculate(elo, ehi)
+    lo, hi, mid, cts = spectrum._return_in_units(xunit)
+    elo, ehi, emid, cts = spectrum._return_in_units('keV')
+    mflux = model.calculate(elo, ehi)  # returns flux per bin
 
-    if xunit in ['angs','Angs','angstrom','Angstrom']:
+    if xunit in ANGS:
         mflux = mflux[::-1]
 
     if perbin:
@@ -81,5 +78,5 @@ def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
         ylabel = 'Flux [phot cm$^{-2}$ s$^{-1}$ %s$^{-1}$]' % xunit
 
     ax.plot(mid, mflux/dbin, **kwargs)
-    ax.set_xlabel(UNIT_LABELS[xunit])
+    ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)
