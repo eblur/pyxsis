@@ -5,6 +5,8 @@ KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS
 
+__all__ = ['Spectrum']
+
 class Spectrum(clarsach.XSpectrum):
     def __init__(self, filename, **kwargs):
         clarsach.XSpectrum.__init__(self, filename, **kwargs)
@@ -52,4 +54,4 @@ class Spectrum(clarsach.XSpectrum):
             new_hi = clarsach.CONST_HC/ener_lo[sl]
 
         new_mid = 0.5 * (new_lo, new_hi)
-        return new_lo, new_hi, new_mid, noticed[sl], np.sqrt(noticed[sl])
+        return new_lo, new_hi, new_mid, noticed[sl]
