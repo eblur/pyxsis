@@ -22,7 +22,7 @@ class Spectrum(clarsach.XSpectrum):
     def angs_mid(self):
         return 0.5 * (self.angs_lo + self.angs_hi)
 
-    def notice(self, bmin, bmax, unit='keV'):
+    def notice_values(self, bmin, bmax, unit='keV'):
         assert unit in ALLOWED_UNITS
         if unit in ANGS:
             emin = clarsach.CONST_HC / bmax
@@ -34,7 +34,6 @@ class Spectrum(clarsach.XSpectrum):
         assert self.bin_unit in KEV
         self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
 
-    @property
     def bin_counts(self, unit='keV'):
         # Always make sure this is true
         assert self.bin_unit in KEV
@@ -53,5 +52,5 @@ class Spectrum(clarsach.XSpectrum):
             new_lo = clarsach.CONST_HC/ener_hi[sl]
             new_hi = clarsach.CONST_HC/ener_lo[sl]
 
-        new_mid = 0.5 * (new_lo, new_hi)
+        new_mid = 0.5 * (new_lo + new_hi)
         return new_lo, new_hi, new_mid, noticed[sl]
