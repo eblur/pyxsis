@@ -44,11 +44,11 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
     else:
         lo, hi, mid, cts = spectrum.bin_counts(xunit)
 
-    flux, f_err = np.zeros(len(eff_exp)), np.zeros(len(eff_exp))
-    ii        = (eff_exp != 0.0)
+    flux, f_err = np.zeros_like(eff_exp), np.zeros_like(eff_exp)
+    ii        = np.isfinite(eff_exp) & (eff_exp != 0.0)
     if xunit in ANGS:
-        flux[ii] = cts[ii] / eff_exp[::-1][ii]
-        f_err[ii] = np.sqrt(cts[ii]) / eff_exp[::-1][ii]
+        flux[ii] = cts[ii] / eff_exp[ii][::-1]
+        f_err[ii] = np.sqrt(cts[ii]) / eff_exp[ii][::-1]
     else:
         flux[ii] = cts[ii] / eff_exp[ii]
         f_err[ii] = np.sqrt(cts[ii]) / eff_exp[ii]
