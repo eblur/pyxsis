@@ -10,8 +10,8 @@ __all__ = ['Spectrum']
 class Spectrum(clarsach.XSpectrum):
     def __init__(self, filename, **kwargs):
         clarsach.XSpectrum.__init__(self, filename, **kwargs)
-        self.hard_set_units('keV')  # Always keep binning in keV
-        self.notice  = None
+        self._setbins_to_keV()  # Always keep binning in keV
+        self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = None
 
     @property

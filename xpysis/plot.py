@@ -11,7 +11,7 @@ ALLOWED_UNITS = KEV + ANGS
 __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
-    if isinstance(clarsach.XSpectrum):
+    if isinstance(spectrum, clarsach.XSpectrum):
         lo, hi, mid, cts = spectrum._return_in_units(xunit)
     else:
         lo, hi, mid, cts = spectrum.bin_counts(xunit)
@@ -39,7 +39,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
 
     # Now deal with desired xunit
     assert xunit in ALLOWED_UNITS
-    if isinstance(clarsach.XSpectrum):
+    if isinstance(spectrum, clarsach.XSpectrum):
         lo, hi, mid, cts = spectrum._return_in_units(xunit)
     else:
         lo, hi, mid, cts = spectrum.bin_counts(xunit)
@@ -70,7 +70,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
 def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
     assert xunit in ALLOWED_UNITS
 
-    if isinstance(clarsach.XSpectrum):
+    if isinstance(spectrum, clarsach.XSpectrum):
         lo, hi, mid, cts = spectrum._return_in_units(xunit)
         elo, ehi, emid, cts = spectrum._return_in_units('keV')
     else:
