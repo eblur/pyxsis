@@ -33,6 +33,23 @@ class Spectrum(clarsach.XSpectrum):
         self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
 
     @property
-    def bin_counts(self):
+    def bin_counts(self, unit='keV'):
+        # Always make sure this is true
+        assert self.bin_unit in KEV
+
+        # Returns lo, hi, mid, counts, counts_err
         noticed = self.counts[self.notice]
-        return noticed
+        ener_lo = self.bin_lo[self.notice]
+        ener_hi = self.bin_hi[self.notice]
+
+        # Figure out how counts should be arranged
+        if unit in KEV:
+            sl = slice(None, None, 1)
+            new_lo, new_hi = ener_lo, ener_hi
+        if unit in ANGS:
+            sl = slice(None, None, -1)
+            new_lo = clarsach.CONST_HC/ener_hi[sl]
+            new_hi = clarsach.CONST_HC/ener_lo[sl]
+
+        new_mid = 0.5 * (new_lo, new_hi)
+        return new_lo, new_hi, new_mid, noticed[sl], np.sqrt(noticed[sl])
