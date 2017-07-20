@@ -1,6 +1,8 @@
 ## Plotting functions
 
 import numpy as np
+import clarsach
+import binspectrum
 
 KEV      = ['kev', 'keV']
 ANGS     = ['angs', 'angstrom', 'Angstrom', 'angstroms', 'Angstroms']
@@ -10,7 +12,10 @@ ALLOWED_UNITS = KEV + ANGS
 __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
-    lo, hi, mid, cts = spectrum._return_in_units(xunit)
+    if isinstance(spectrum, binspectrum.Spectrum):
+        lo, hi, mid, cts = spectrum.bin_counts(xunit)
+    else:
+        lo, hi, mid, cts = spectrum._return_in_units(xunit)
     cts_err = np.sqrt(cts)
 
     if perbin:
@@ -28,20 +33,24 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
     return
 
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
-
     # Models will always be in keV bin units
-    no_mod  = np.ones(len(spectrum.arf.specresp))  # a non-model of ones (integrated)
-    eff_exp = spectrum.apply_resp(no_mod)  # non-counts per bin
+    no_mod  = np.ones_like(spectrum.arf.specresp)  # a non-model of ones (integrated)
+    eff_tmp = spectrum.apply_resp(no_mod)
 
     # Now deal with desired xunit
     assert xunit in ALLOWED_UNITS
-    lo, hi, mid, cts = spectrum._return_in_units(xunit)
+    if isinstance(spectrum, binspectrum.Spectrum):
+        lo, hi, mid, cts = spectrum.bin_counts(xunit)
+        eff_exp = eff_tmp[spectrum.notice]
+    else:
+        lo, hi, mid, cts = spectrum._return_in_units(xunit)
+        eff_exp = eff_tmp
 
-    flux, f_err = np.zeros(len(eff_exp)), np.zeros(len(eff_exp))
-    ii        = (eff_exp != 0.0)
+    flux, f_err = np.zeros_like(eff_exp), np.zeros_like(eff_exp)
+    ii        = np.isfinite(eff_exp) & (eff_exp != 0.0)
     if xunit in ANGS:
-        flux[ii] = cts[ii] / eff_exp[::-1][ii]
-        f_err[ii] = np.sqrt(cts[ii]) / eff_exp[::-1][ii]
+        flux[ii] = cts[ii] / eff_exp[ii][::-1]
+        f_err[ii] = np.sqrt(cts[ii]) / eff_exp[ii][::-1]
     else:
         flux[ii] = cts[ii] / eff_exp[ii]
         f_err[ii] = np.sqrt(cts[ii]) / eff_exp[ii]
@@ -63,9 +72,15 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
 def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
     assert xunit in ALLOWED_UNITS
 
-    lo, hi, mid, cts = spectrum._return_in_units(xunit)
-    elo, ehi, emid, cts = spectrum._return_in_units('keV')
-    mflux = model.calculate(elo, ehi)  # returns flux per bin
+    mflux = model.calculate(spectrum.arf.ener_lo, spectrum.arf.ener_hi)  # returns flux per bin
+
+    if isinstance(spectrum, binspectrum.Spectrum):
+        lo, hi, mid, cts = spectrum.bin_counts(xunit)
+        elo, ehi, emid, cts = spectrum.bin_coutns('keV')
+        mflux = mflux[spectrum.notice]
+    else:
+        lo, hi, mid, cts = spectrum._return_in_units(xunit)
+        elo, ehi, emid, cts = spectrum._return_in_units('keV')
 
     if xunit in ANGS:
         mflux = mflux[::-1]
