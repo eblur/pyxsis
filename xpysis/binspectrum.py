@@ -12,7 +12,7 @@ class Spectrum(clarsach.XSpectrum):
         clarsach.XSpectrum.__init__(self, filename, **kwargs)
         self._setbins_to_keV()  # Always keep binning in keV
         self.notice  = np.ones_like(self.counts, dtype=bool)
-        self.binning = None
+        self.binning = np.zeros_like(self.counts)
 
     @property
     def ener_mid(self):
@@ -34,14 +34,26 @@ class Spectrum(clarsach.XSpectrum):
         assert self.bin_unit in KEV
         self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
 
+    def _parse_binned_counts(self):
+        binning = self.binning[self.notice]
+        return 0.0
+
+    def _parse_binned_edges(self):
+        binning = self.binning[self.notice]
+        return 0.0
+
     def bin_counts(self, unit='keV'):
-        # Always make sure this is true
+        # It's assumed that the spectrum is stored in keV bin units
         assert self.bin_unit in KEV
 
         # Returns lo, hi, mid, counts, counts_err
-        noticed = self.counts[self.notice]
-        ener_lo = self.bin_lo[self.notice]
-        ener_hi = self.bin_hi[self.notice]
+        if not all(self.binning == 0.0):
+            counts = self._parse_binned_counts()
+            ener_lo, ener_hi = self._parse_binned_edges()
+        else:
+            counts  = self.counts[self.notice]
+            ener_lo = self.bin_lo[self.notice]
+            ener_hi = self.bin_hi[self.notice]
 
         # Figure out how counts should be arranged
         if unit in KEV:
