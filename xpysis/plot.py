@@ -40,7 +40,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
     def _bin_exp(exp, binning):
         # Use mean effective exposure for binned spectra
         nstart, nend = min(binning), max(binning)
-        result = [np.mean(exp[binning == n]) for n in np.arange(nstart, nend)]
+        result = [np.mean(exp[binning == n]) for n in np.arange(nstart, nend+1)]
         assert len(result) == (nend - nstart + 1)
         return np.array(result)
 
