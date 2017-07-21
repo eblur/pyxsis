@@ -47,6 +47,7 @@ class Spectrum(clarsach.XSpectrum):
         while n <= max(binning):
             ncounts = np.sum(counts[binning == n])
             result.append(ncounts)
+            n += 1
 
         # Quick check that the final number of bins is correct
         assert len(result) == (max(binning) - min(binning) + 1)
