@@ -5,7 +5,7 @@ KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS
 
-__all__ = ['Spectrum','group_channels']
+__all__ = ['Spectrum','group_channels','group_mincounts']
 
 class Spectrum(clarsach.XSpectrum):
     def __init__(self, filename, **kwargs):
@@ -154,6 +154,13 @@ def group_mincounts(spectrum, mc):
         if tempcount >= mc:
             counter += 1
             tempcount = 0
+    result = np.array(result)
 
-    spectrum.binning = np.array(result)
+    # Ensure that the last bin has at least ten counts
+    nlast = result[-1]
+    last_bin_count = np.sum(spectrum.counts[result == nlast])
+    if last_bin_count < mc:
+        result[result == nlast] = nlast-1
+
+    spectrum.binning = result
     return
