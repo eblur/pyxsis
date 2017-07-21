@@ -5,7 +5,7 @@ KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS
 
-__all__ = ['Spectrum']
+__all__ = ['Spectrum','group_channels']
 
 class Spectrum(clarsach.XSpectrum):
     def __init__(self, filename, **kwargs):
@@ -67,3 +67,37 @@ class Spectrum(clarsach.XSpectrum):
 
         new_mid = 0.5 * (new_lo + new_hi)
         return new_lo, new_hi, new_mid, noticed[sl]
+
+## ----- Binning functions
+
+def group_channels(spectrum, n):
+    """
+    Group channels in a spectrum by a constant factor, n
+
+    Parameters
+    ----------
+    spectrum : Spectrum
+        Must contain `binning` attribute (ndarray)
+
+    n : int
+        Integer factor for binning the spectrum channels
+
+    Returns
+    -------
+    Modifies Spectrum.binning, returns nothing
+    """
+    assert n > 1, "n must be larger than 1"
+
+    tot_chan = len(spectrum.binning)  # Total number of channels
+    counter, index = 0, 0
+    result = np.array([])
+    while index < tot_chan:
+        result = np.append(result, np.repeat(counter, n))
+        index += n
+        counter += 1
+
+    # Trim array in case we went over the total number of channels
+    # which will happen when tot_chan % n != 0
+    result = result[np.arange(tot_chan)]
+    spectrum.binning = result
+    return
