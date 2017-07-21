@@ -126,3 +126,34 @@ def group_channels(spectrum, n):
     result = result[np.arange(tot_chan)]
     spectrum.binning = result
     return
+
+def group_mincounts(spectrum, mc):
+    """
+    Group channels in a spectrum so that there is a minimum number of counts in each bin
+
+    Parameters
+    ----------
+    spectrum : Spectrum
+        Must contain `binning` attribute (ndarray)
+
+    mc : int
+        Minimum number of counts per bin
+
+    Returns
+    -------
+    Modifies Spectrum.binning, returns nothing
+    """
+    assert mc > 0, "mc must be larger than 1"
+
+    tot_chan = len(spectrum.binning)
+    counter, tempcount = 0, 0
+    result = []
+    for i in range(tot_chan):
+        result.append(counter)
+        tempcount += spectrum.counts[i]
+        if tempcount >= mc:
+            counter += 1
+            tempcount = 0
+
+    spectrum.binning = np.array(result)
+    return
