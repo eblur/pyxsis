@@ -35,8 +35,22 @@ class Spectrum(clarsach.XSpectrum):
         self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
 
     def _parse_binned_counts(self):
+        ## Returns the number of counts in each bin for a binned spectrum
+        ## Works on the noticed regions only
+        assert not all(self.binning == 0), "there is no grouping on this spectrum"
+
+        # Use noticed regions only
         binning = self.binning[self.notice]
-        return 0.0
+        counts  = self.counts[self.notice]
+
+        result, n = [], min(binning)
+        while n <= max(binning):
+            ncounts = np.sum(counts[binning == n])
+            result.append(ncounts)
+
+        # Quick check that the final number of bins is correct
+        assert len(result) == (max(binning) - min(binning) + 1)
+        return np.array(result)
 
     def _parse_binned_edges(self):
         binning = self.binning[self.notice]
