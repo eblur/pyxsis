@@ -46,14 +46,15 @@ class Spectrum(clarsach.XSpectrum):
         # It's assumed that the spectrum is stored in keV bin units
         assert self.bin_unit in KEV
 
-        # Returns lo, hi, mid, counts, counts_err
-        if not all(self.binning == 0.0):
-            counts = self._parse_binned_counts()
-            ener_lo, ener_hi = self._parse_binned_edges()
-        else:
+        # Returns lo, hi, mid, counts
+        # self.binning is set to all zeros if there is no binning defined
+        if all(self.binning == 0.0):
             counts  = self.counts[self.notice]
             ener_lo = self.bin_lo[self.notice]
             ener_hi = self.bin_hi[self.notice]
+        else:
+            counts = self._parse_binned_counts()
+            ener_lo, ener_hi = self._parse_binned_edges()
 
         # Figure out how counts should be arranged
         if unit in KEV:
