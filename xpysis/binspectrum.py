@@ -34,6 +34,10 @@ class Spectrum(clarsach.XSpectrum):
         assert self.bin_unit in KEV
         self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
 
+    def notice_all(self):
+        # Resets the notice attribute
+        self.notice = np.ones_like(self.counts, dtype=bool)
+
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
         ## Works on the noticed regions only
