@@ -38,6 +38,10 @@ class Spectrum(clarsach.XSpectrum):
         # Resets the notice attribute
         self.notice = np.ones_like(self.counts, dtype=bool)
 
+    def reset_binning(self):
+        # Resets the binning attribute
+        self.binning = np.zeros_like(self.counts)
+
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
         ## Works on the noticed regions only
