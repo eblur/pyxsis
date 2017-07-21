@@ -66,7 +66,7 @@ class Spectrum(clarsach.XSpectrum):
             new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
 
         new_mid = 0.5 * (new_lo + new_hi)
-        return new_lo, new_hi, new_mid, noticed[sl]
+        return new_lo, new_hi, new_mid, counts[sl]
 
 ## ----- Binning functions
 
