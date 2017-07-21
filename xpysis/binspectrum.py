@@ -61,8 +61,8 @@ class Spectrum(clarsach.XSpectrum):
         ener_lo = self.bin_lo[self.notice]
         ener_hi = self.bin_hi[self.notice]
 
-        bin_lo  = [ener_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)]
-        bin_hi  = [ener_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)]
+        bin_lo  = np.array([ener_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)])
+        bin_hi  = np.array([ener_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
 
         # Unit tests
         assert len(bin_lo) == (max(binning) - min(binning) + 1)
@@ -70,7 +70,7 @@ class Spectrum(clarsach.XSpectrum):
         assert all(bin_lo < bin_hi)
         assert all(bin_lo[1:] == bin_hi[:-1])
 
-        return np.array(bin_lo), np.array(bin_hi)
+        return bin_lo, bin_hi
 
     def bin_counts(self, unit='keV'):
         # It's assumed that the spectrum is stored in keV bin units
