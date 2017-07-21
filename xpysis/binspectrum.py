@@ -43,10 +43,12 @@ class Spectrum(clarsach.XSpectrum):
         binning = self.binning[self.notice]
         counts  = self.counts[self.notice]
 
-        result = [np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)]
+        result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
 
-        # Quick check that the final number of bins is correct
+        # Unit tests
         assert len(result) == (max(binning) - min(binning) + 1)
+        assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
+
         return np.array(result)
 
     def _parse_binned_edges(self):
