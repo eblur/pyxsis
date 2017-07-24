@@ -16,9 +16,9 @@ class StackSpectrum(Spectrum):
         assert len(speclist) > 1, "Need more than one spectrum to stack"
 
         # Modify / overwrite old stuff
-        self.counts   = self._stack_counts(self, speclist[0], speclist[1:])
+        self.counts       = self._stack_counts(speclist[0], speclist[1:])
         self.exposure     = 1.0  # Pull from ARF, if exposure exists, if not throw a warning and take it from spectrum files
-        self.arf.specresp = self._stack_arf(self, speclist[0], speclist[1:])
+        self.arf.specresp = self._stack_arf(speclist[0], speclist[1:])
         self.arf.exposure = 1.0
         self.arf.fracexpo = 1.0
 
