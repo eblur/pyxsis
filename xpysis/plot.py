@@ -37,17 +37,27 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
     no_mod  = np.ones_like(spectrum.arf.specresp)  # a non-model of ones (integrated)
     eff_tmp = spectrum.apply_resp(no_mod)
 
+    def _bin_exp(exp, binning):
+        # Use mean effective exposure for binned spectra
+        nstart, nend = min(binning), max(binning)
+        result = [np.mean(exp[binning == n]) for n in np.arange(nstart, nend+1)]
+        assert len(result) == (nend - nstart + 1)
+        return np.array(result)
+
     # Now deal with desired xunit
     assert xunit in ALLOWED_UNITS
     if isinstance(spectrum, binspectrum.Spectrum):
         lo, hi, mid, cts = spectrum.bin_counts(xunit)
-        eff_exp = eff_tmp[spectrum.notice]
+        if all(spectrum.binning == 0):
+            eff_exp = eff_tmp[spectrum.notice]
+        else:
+            eff_exp = _bin_exp(eff_tmp[spectrum.notice], spectrum.binning[spectrum.notice])
     else:
         lo, hi, mid, cts = spectrum._return_in_units(xunit)
         eff_exp = eff_tmp
 
     flux, f_err = np.zeros_like(eff_exp), np.zeros_like(eff_exp)
-    ii        = np.isfinite(eff_exp) & (eff_exp != 0.0)
+    ii = np.isfinite(eff_exp) & (eff_exp != 0.0)
     if xunit in ANGS:
         flux[ii] = cts[ii] / eff_exp[ii][::-1]
         f_err[ii] = np.sqrt(cts[ii]) / eff_exp[ii][::-1]
