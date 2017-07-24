@@ -39,7 +39,7 @@ class StackSpectrum(Spectrum):
             result = 1.0
             try:
                 result = spec.arf.data[1].header['EXPOSURE']
-            else:
+            except:
                 result = spec.exposure
                 print("Cannot find exposure keyword from ARF, using PHA file")
             return result
