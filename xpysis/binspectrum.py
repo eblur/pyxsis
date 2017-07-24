@@ -14,14 +14,6 @@ class Spectrum(clarsach.XSpectrum):
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts)
 
-    @property
-    def ener_mid(self):
-        return 0.5 * (self.ener_lo + self.ener_hi)
-
-    @property
-    def angs_mid(self):
-        return 0.5 * (self.angs_lo + self.angs_hi)
-
     def notice_values(self, bmin, bmax, unit='keV'):
         assert unit in ALLOWED_UNITS
         if unit in ANGS:
