@@ -8,20 +8,11 @@ ALLOWED_UNITS = KEV + ANGS
 __all__ = ['Spectrum','group_channels','group_mincounts']
 
 class Spectrum(clarsach.XSpectrum):
-    def __init__(self, filename, stacklist=None, **kwargs):
-
-        if stacklist is not None:
-            assert isinstance(stacklist, list)
-            return self._stack_list(stacklist[0], stacklist[1:])
-        else:
-            self._load_from_filename(filename)
-
-        self.notice  = np.ones_like(self.counts, dtype=bool)
-        self.binning = np.zeros_like(self.counts)
-
-    def _load_from_filename(self, filename):
+    def __init__(self, filename, **kwargs):
         clarsach.XSpectrum.__init__(self, filename, **kwargs)
         self._setbins_to_keV()  # Always keep binning in keV
+        self.notice  = np.ones_like(self.counts, dtype=bool)
+        self.binning = np.zeros_like(self.counts)
 
     def notice_values(self, bmin, bmax, unit='keV'):
         assert unit in ALLOWED_UNITS

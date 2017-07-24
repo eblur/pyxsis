@@ -1,5 +1,6 @@
 import numpy as np
 import clarsach
+from binspectrum import Spectrum
 
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
@@ -7,19 +8,17 @@ ALLOWED_UNITS = KEV + ANGS
 
 __all__ = ['StackSpectrum']
 
-class StackSpectrum(object):
-    def __init__(self, speclist):
+class StackSpectrum(Spectrum):
+    def __init__(self, file0, speclist, **kwargs):
+        Spectrum.__init__(self, file0, **kwargs)
+
         assert isinstance(speclist, list), "Need to provide a list of Spectrum objects"
         assert len(speclist) > 1, "Need more than one spectrum to stack"
-        self.bin_lo   = speclist[0].bin_lo
-        self.bin_hi   = speclist[0].bin_hi
-        self.bin_unit = speclist[0].bin_unit
         self.counts   = self._stack_counts(self, speclist[0], speclist[1:])
         self.specresp = self._stack_arf(self, speclist[0], speclist[1:])
         self.exposure = None  # Pull from ARF, if exposure exists, if not throw a warning and take it from spectrum files
         self.fracexpo = 1.0
-        self.rmf = None  # Copy an RMF object from the first spectrum
-
+        
     def _stack_counts(self, s0, speclist):
         counts = s0.counts
         for s in speclist:
