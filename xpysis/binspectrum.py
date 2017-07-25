@@ -85,6 +85,12 @@ class Spectrum(clarsach.XSpectrum):
         new_mid = 0.5 * (new_lo + new_hi)
         return new_lo, new_hi, new_mid, counts[sl]
 
+    def _stack_list(self, speclist):
+        assert len(speclist) > 0
+        s0 = filelist[0]
+        assert isinstance(s0, Spectrum)
+        return s0
+
 ## ----- Binning functions
 
 def group_channels(spectrum, n):
