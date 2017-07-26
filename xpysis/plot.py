@@ -11,11 +11,13 @@ ALLOWED_UNITS = KEV + ANGS
 
 __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
-def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
+def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
+                bkgsub=True, usebackscal=True, **kwargs):
     if isinstance(spectrum, binspectrum.Spectrum):
-        lo, hi, mid, cts = spectrum.bin_counts(xunit)
+        lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
+        mid = 0.5 * (lo + hi)
     else:
-        lo, hi, mid, cts = spectrum._return_in_units(xunit)
+        lo, hi, mid, cts_err = spectrum._return_in_units(xunit)
     cts_err = np.sqrt(cts)
 
     if perbin:
@@ -32,7 +34,8 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, **kwargs):
     ax.set_ylabel(ylabel)
     return
 
-def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
+def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
+                bkgsub=True, usebackscal=True, **kwargs):
     # Models will always be in keV bin units
     no_mod  = np.ones_like(spectrum.arf.specresp)  # a non-model of ones (integrated)
     eff_tmp = spectrum.apply_resp(no_mod)
@@ -47,7 +50,8 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
     # Now deal with desired xunit
     assert xunit in ALLOWED_UNITS
     if isinstance(spectrum, binspectrum.Spectrum):
-        lo, hi, mid, cts = spectrum.bin_counts(xunit)
+        lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
+        mid = 0.5 * (lo + hi)
         if all(spectrum.binning == 0):
             eff_exp = eff_tmp[spectrum.notice]
         else:
@@ -79,14 +83,16 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, **kwargs):
     ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)
 
-def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
+def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, \
+                    bkgsub=True, usebackscal=True, **kwargs):
     assert xunit in ALLOWED_UNITS
 
     mflux = model.calculate(spectrum.arf.ener_lo, spectrum.arf.ener_hi)  # returns flux per bin
 
     if isinstance(spectrum, binspectrum.Spectrum):
-        lo, hi, mid, cts = spectrum.bin_counts(xunit)
-        elo, ehi, emid, cts = spectrum.bin_coutns('keV')
+        lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
+        elo, ehi, cts, cts_err = spectrum.bin_counts('keV', bkgsub=bkgsub, usebackscal=usebackscal)
+        mid = 0.5 * (lo + hi)
         mflux = mflux[spectrum.notice]
     else:
         lo, hi, mid, cts = spectrum._return_in_units(xunit)
