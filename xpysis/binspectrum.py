@@ -14,6 +14,7 @@ class Spectrum(clarsach.XSpectrum):
         self._setbins_to_keV()  # Always keep binning in keV
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts)
+        self.bkg = None
 
     def notice_values(self, bmin, bmax, unit='keV'):
         assert unit in ALLOWED_UNITS
@@ -57,7 +58,7 @@ class Spectrum(clarsach.XSpectrum):
             new_lo = clarsach.respond.CONST_HC/ener_hi[sl]
             new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
 
-        if bkgsub:
+        if bkgsub and (self.bkg is not None):
             blo, bhi, bcts, bcts_err = self.bin_bkg(unit=unit, usebackscal=usebackscal)
             new_counts = counts[sl] - bcts
             new_error  = np.sqrt(counts[sl] + bcts_err**2)
