@@ -112,7 +112,7 @@ def _parse_binning(spec, notice, binning):
     assert not all(binning == 0), "there is no grouping on this spectrum"
 
     # Use noticed regions only
-    binning = spec.binning[notice]
+    binning = binning[notice]
     counts  = spec.counts[notice]
     ener_lo = spec.bin_lo[notice]
     ener_hi = spec.bin_hi[notice]
