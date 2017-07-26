@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from astropy.io import fits
+from astropy.units import si
 import clarsach
 
 KEV  = ['kev', 'keV']
@@ -20,6 +21,9 @@ class BkgSpectrum(object):
             self._read_HETG(filename)
         else:
             self._read_other(filename)
+
+        if self.bin_unit in ANGS:
+            self._setbins_to_keV()
 
     @property
     def bin_mid(self):
@@ -54,6 +58,19 @@ class BkgSpectrum(object):
         # area of background region
         try:
             self.backscal = 1.0 / hdr['BACKSCAL']
-        else:
+        except:
             self.backscal = 1.0
         ff.close()
+
+    def _setbins_to_keV(self):
+        assert self.bin_unit in ANGS
+        new_bhi, sl = clarsach.respond._Angs_keV(self.bin_lo)
+        new_blo, sl = clarsach.respond._Angs_keV(self.bin_hi)
+        new_cts  = self.counts[sl]
+
+        # Now hard set everything
+        self.bin_lo = new_blo
+        self.bin_hi = new_bhi
+        self.counts = new_cts
+        self.bin_unit = si.keV
+        return
