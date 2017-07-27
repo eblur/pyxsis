@@ -47,7 +47,7 @@ class Spectrum(clarsach.XSpectrum):
             ener_lo = self.bin_lo[self.notice]
             ener_hi = self.bin_hi[self.notice]
         else:
-            ener_lo, ener_hi, counts = _parse_binning(self, self.notice, self.binning)
+            ener_lo, ener_hi, counts, cts_err = self._parse_binning()
 
         # Figure out how counts should be arranged
         if unit in KEV:
@@ -59,12 +59,37 @@ class Spectrum(clarsach.XSpectrum):
             new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
 
         if bkgsub and (self.bkg is not None):
-            blo, bhi, bcts, bcts_err = self.bin_bkg(unit=unit, usebackscal=usebackscal)
-            new_counts = counts[sl] - bcts
-            new_error  = np.sqrt(counts[sl] + bcts_err**2)
+            blo, bhi, bcts, bcts_err = self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
+            new_counts = counts[sl] - bcts[sl]
+            new_error  = np.sqrt(cts_err[sl]**2 + bcts_err[sl]**2)
             return new_lo, new_hi, new_counts, new_error
         else:
             return new_lo, new_hi, counts[sl], np.sqrt(counts[sl])
+
+    def _parse_binning(self):
+        ## Returns the number of counts in each bin for a binned spectrum
+        ## Works on the noticed regions only
+        assert not all(self.binning == 0), "there is no grouping on this spectrum"
+
+        # Use noticed regions only
+        binning = self.binning[self.notice]
+        counts  = self.counts[self.notice]
+        ener_lo = self.bin_lo[self.notice]
+        ener_hi = self.bin_hi[self.notice]
+
+        bin_lo = np.array([ener_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)])
+        bin_hi = np.array([ener_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
+        result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
+
+        # Unit tests
+        assert len(bin_lo) == (max(binning) - min(binning) + 1)
+        assert len(bin_hi) == (max(binning) - min(binning) + 1)
+        assert all(bin_lo < bin_hi)
+        assert all(bin_lo[1:] == bin_hi[:-1])
+        assert len(result) == (max(binning) - min(binning) + 1)
+        assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
+
+        return bin_lo, bin_hi, result, np.sqrt(result)
 
     def _stack_list(self, speclist):
         assert len(speclist) > 0
@@ -78,58 +103,6 @@ class Spectrum(clarsach.XSpectrum):
         assert all(self.bin_hi == bkgspec.bin_hi), "Grids need to be the same"
         assert self.bin_unit == bkgspec.bin_unit, "Bin units need to be the same"
         self.bkg = bkgspec
-
-    def bin_bkg(self, unit='keV', usebackscal=True):
-        assert self.bin_unit in KEV
-
-        if all(self.binning == 0.0):
-            counts  = self.bkg.counts[self.notice]
-            ener_lo = self.bkg.bin_lo[self.notice]
-            ener_hi = self.bkg.bin_hi[self.notice]
-        else:
-            ener_lo, ener_hi, counts = _parse_binning(self.bkg, self.notice, self.binning)
-
-        if unit in KEV:
-            sl = slice(None, None, 1)
-            new_lo, new_hi = ener_lo, ener_hi
-        if unit in ANGS:
-            sl = slice(None, None, -1)
-            new_lo = clarsach.respond.CONST_HC/ener_hi[sl]
-            new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
-
-        if usebackscal:
-            new_counts = counts[sl] * self.bkg.backscal
-            new_err    = np.sqrt(counts[sl]) * self.bkg.backscal
-            return new_lo, new_hi, new_counts, new_err
-        else:
-            return new_lo, new_hi, counts[sl], np.sqrt(counts[sl])
-
-## ----- Helper functions
-
-def _parse_binning(spec, notice, binning):
-    ## Returns the number of counts in each bin for a binned spectrum
-    ## Works on the noticed regions only
-    assert not all(binning == 0), "there is no grouping on this spectrum"
-
-    # Use noticed regions only
-    binning = binning[notice]
-    counts  = spec.counts[notice]
-    ener_lo = spec.bin_lo[notice]
-    ener_hi = spec.bin_hi[notice]
-
-    bin_lo = np.array([ener_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)])
-    bin_hi = np.array([ener_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
-    result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
-
-    # Unit tests
-    assert len(bin_lo) == (max(binning) - min(binning) + 1)
-    assert len(bin_hi) == (max(binning) - min(binning) + 1)
-    assert all(bin_lo < bin_hi)
-    assert all(bin_lo[1:] == bin_hi[:-1])
-    assert len(result) == (max(binning) - min(binning) + 1)
-    assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
-
-    return bin_lo, bin_hi, result
 
 ## ----- Binning functions
 
