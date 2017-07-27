@@ -46,6 +46,7 @@ class Spectrum(clarsach.XSpectrum):
             counts  = self.counts[self.notice]
             ener_lo = self.bin_lo[self.notice]
             ener_hi = self.bin_hi[self.notice]
+            cts_err = np.sqrt(counts)
         else:
             ener_lo, ener_hi, counts, cts_err = self._parse_binning()
 
@@ -90,6 +91,10 @@ class Spectrum(clarsach.XSpectrum):
         assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
 
         return bin_lo, bin_hi, result, np.sqrt(result)
+
+    def bin_bkg(self, usebackscal=True):
+        # Shortcut function for returning background
+        return self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
 
     def _stack_list(self, speclist):
         assert len(speclist) > 0

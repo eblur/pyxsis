@@ -75,7 +75,7 @@ class BkgSpectrum(object):
         self.bin_unit = si.keV
         return
 
-    def bin_bkg(self, notice, binning, unit='keV' usebackscal=True):
+    def bin_bkg(self, notice, binning, unit='keV', usebackscal=True):
         """
         Returns a binned background spectrum
 
