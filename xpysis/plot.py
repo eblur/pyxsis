@@ -83,7 +83,10 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
 def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
     assert xunit in ALLOWED_UNITS
 
-    mflux = model.calculate(spectrum.arf.ener_lo, spectrum.arf.ener_hi)  # returns flux per bin
+    lo, hi, cts, cts_err = spectrum.bin_counts(unit=xunit)
+    mid = 0.5 * (lo + hi)
+
+    mflux = model.calculate(spectrum.arf.e_low, spectrum.arf.e_high)  # returns flux per bin
     if xunit in ANGS:
         mflux = mflux[::-1]
 
