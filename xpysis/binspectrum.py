@@ -1,5 +1,6 @@
 import numpy as np
 import clarsach
+from bkgspectrum import BkgSpectrum
 
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
@@ -13,6 +14,7 @@ class Spectrum(clarsach.XSpectrum):
         self._setbins_to_keV()  # Always keep binning in keV
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts)
+        self.bkg = None
 
     def notice_values(self, bmin, bmax, unit='keV'):
         assert unit in ALLOWED_UNITS
@@ -34,6 +36,37 @@ class Spectrum(clarsach.XSpectrum):
         # Resets the binning attribute
         self.binning = np.zeros_like(self.counts)
 
+    def bin_counts(self, unit='keV', bkgsub=True, usebackscal=True):
+        # It's assumed that the spectrum is stored in keV bin units
+        assert self.bin_unit in KEV
+
+        # Returns lo, hi, mid, counts
+        # self.binning is set to all zeros if there is no binning defined
+        if all(self.binning == 0.0):
+            counts  = self.counts[self.notice]
+            ener_lo = self.bin_lo[self.notice]
+            ener_hi = self.bin_hi[self.notice]
+            cts_err = np.sqrt(counts)
+        else:
+            ener_lo, ener_hi, counts, cts_err = self._parse_binning()
+
+        # Figure out how counts should be arranged
+        if unit in KEV:
+            sl = slice(None, None, 1)
+            new_lo, new_hi = ener_lo, ener_hi
+        if unit in ANGS:
+            sl = slice(None, None, -1)
+            new_lo = clarsach.respond.CONST_HC/ener_hi[sl]
+            new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
+
+        if bkgsub and (self.bkg is not None):
+            blo, bhi, bcts, bcts_err = self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
+            new_counts = counts[sl] - bcts[sl]
+            new_error  = np.sqrt(cts_err[sl]**2 + bcts_err[sl]**2)
+            return new_lo, new_hi, new_counts, new_error
+        else:
+            return new_lo, new_hi, counts[sl], np.sqrt(counts[sl])
+
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
         ## Works on the noticed regions only
@@ -49,7 +82,6 @@ class Spectrum(clarsach.XSpectrum):
         bin_hi = np.array([ener_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
         result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
 
-
         # Unit tests
         assert len(bin_lo) == (max(binning) - min(binning) + 1)
         assert len(bin_hi) == (max(binning) - min(binning) + 1)
@@ -58,38 +90,24 @@ class Spectrum(clarsach.XSpectrum):
         assert len(result) == (max(binning) - min(binning) + 1)
         assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
 
-        return bin_lo, bin_hi, result
+        return bin_lo, bin_hi, result, np.sqrt(result)
 
-    def bin_counts(self, unit='keV'):
-        # It's assumed that the spectrum is stored in keV bin units
-        assert self.bin_unit in KEV
-
-        # Returns lo, hi, mid, counts
-        # self.binning is set to all zeros if there is no binning defined
-        if all(self.binning == 0.0):
-            counts  = self.counts[self.notice]
-            ener_lo = self.bin_lo[self.notice]
-            ener_hi = self.bin_hi[self.notice]
-        else:
-            ener_lo, ener_hi, counts = self._parse_binning()
-
-        # Figure out how counts should be arranged
-        if unit in KEV:
-            sl = slice(None, None, 1)
-            new_lo, new_hi = ener_lo, ener_hi
-        if unit in ANGS:
-            sl = slice(None, None, -1)
-            new_lo = clarsach.respond.CONST_HC/ener_hi[sl]
-            new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
-
-        new_mid = 0.5 * (new_lo + new_hi)
-        return new_lo, new_hi, new_mid, counts[sl]
+    def bin_bkg(self, usebackscal=True):
+        # Shortcut function for returning background
+        return self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
 
     def _stack_list(self, speclist):
         assert len(speclist) > 0
         s0 = filelist[0]
         assert isinstance(s0, Spectrum)
         return s0
+
+    def assign_bkg(self, bkgspec):
+        assert isinstance(bkgspec, BkgSpectrum)
+        assert all(self.bin_lo == bkgspec.bin_lo), "Grids need to be the same"
+        assert all(self.bin_hi == bkgspec.bin_hi), "Grids need to be the same"
+        assert self.bin_unit == bkgspec.bin_unit, "Bin units need to be the same"
+        self.bkg = bkgspec
 
 ## ----- Binning functions
 
