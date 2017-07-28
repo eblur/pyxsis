@@ -13,12 +13,9 @@ __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
                 bkgsub=True, usebackscal=True, **kwargs):
-    if isinstance(spectrum, binspectrum.Spectrum):
-        lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
-        mid = 0.5 * (lo + hi)
-    else:
-        lo, hi, mid, cts = spectrum._return_in_units(xunit)
-        cts_err = np.sqrt(cts)
+
+    lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
+    mid = 0.5 * (lo + hi)
 
     if perbin:
         dbin   = 1.0
@@ -49,17 +46,12 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
 
     # Now deal with desired xunit
     assert xunit in ALLOWED_UNITS
-    if isinstance(spectrum, binspectrum.Spectrum):
-        lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
-        mid = 0.5 * (lo + hi)
-        if all(spectrum.binning == 0):
-            eff_exp = eff_tmp[spectrum.notice]
-        else:
-            eff_exp = _bin_exp(eff_tmp[spectrum.notice], spectrum.binning[spectrum.notice])
+    lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
+    mid = 0.5 * (lo + hi)
+    if all(spectrum.binning == 0):
+        eff_exp = eff_tmp[spectrum.notice]
     else:
-        lo, hi, mid, cts = spectrum._return_in_units(xunit)
-        cts_err = np.sqrt(cts)
-        eff_exp = eff_tmp
+        eff_exp = _bin_exp(eff_tmp[spectrum.notice], spectrum.binning[spectrum.notice])
 
     flux, f_err = np.zeros_like(eff_exp), np.zeros_like(eff_exp)
     ii = np.isfinite(eff_exp) & (eff_exp != 0.0)
