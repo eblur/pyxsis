@@ -14,6 +14,7 @@ __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
                 bkgsub=True, usebackscal=True, **kwargs):
 
+    assert isinstance(spectrum, binspectrum.Spectrum)
     lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
     mid = 0.5 * (lo + hi)
 
@@ -33,6 +34,9 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
 
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
                 bkgsub=True, usebackscal=True, **kwargs):
+
+    assert isinstance(spectrum, binspectrum.Spectrum)
+
     # Models will always be in keV bin units
     no_mod  = np.ones_like(spectrum.arf.specresp)  # a non-model of ones (integrated)
     eff_tmp = spectrum.apply_resp(no_mod)
