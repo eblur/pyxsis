@@ -96,12 +96,6 @@ class Spectrum(clarsach.XSpectrum):
         # Shortcut function for returning background
         return self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
 
-    def _stack_list(self, speclist):
-        assert len(speclist) > 0
-        s0 = filelist[0]
-        assert isinstance(s0, Spectrum)
-        return s0
-
     def assign_bkg(self, bkgspec):
         assert isinstance(bkgspec, BkgSpectrum)
         assert all(self.bin_lo == bkgspec.bin_lo), "Grids need to be the same"
