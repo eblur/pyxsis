@@ -85,3 +85,4 @@ def stack_spectra(spec0, speclist):
     spec0.arf.specresp = arfresp
     spec0.arf.fracexpo = fracexpo
     spec0.exposure     = exposure  # Taken from ARF if available
+    return
