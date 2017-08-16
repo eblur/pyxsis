@@ -23,6 +23,8 @@ def stack_spectra(spec0, speclist, weights=None):
     speclist : list of xpysis.binspectrum.Spectrum objects
         A list of spectra to be stacked.
 
+    weights = None : a list of weights for each spectrum in speclist
+
     Due to the fact that python uses pointers to assign variables, the user
     needs to be careful about the inputs provided. Properties of `spec0` will
     be overwritten. **Most importantly `spec0` should not be included in
@@ -40,18 +42,19 @@ def stack_spectra(spec0, speclist, weights=None):
     assert len(speclist) > 1, "Need more than one spectrum to stack"
 
     if weights in None:
-        weights = np.zeros_like(spec0.counts)
+        weights = np.ones(len(speclist))
     else:
         assert len(weights) == len(speclist), "ERROR: Inappropriate input for weights kwarg"
 
-    def _stack_counts(speclist):
+    def _stack_counts(speclist, weights):
         s0     = speclist[0]
-        counts = np.copy(s0.counts)
-        for s in speclist[1:]:
+        counts = np.copy(s0.counts) * weights[0]
+        for i in np.arange(1, len(speclist)):
+            s, w = speclist[i], weights[i]
             assert all(s.bin_lo == s0.bin_lo), "Grids on every spectrum need to match"
             assert all(s.bin_hi == s0.bin_hi), "Grids on every spectrum need to match"
             assert s.bin_unit == s0.bin_unit, "Grids need to be in the same units"
-            counts += s.counts
+            counts += s.counts * w
         return counts
 
     def _arf_exp(spec):
