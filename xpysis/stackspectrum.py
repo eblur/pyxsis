@@ -72,10 +72,10 @@ def stack_spectra(spec0, speclist):
             assert a.e_unit == a0.e_unit, "ARF grids need to be in the same units"
             specresp += a.specresp * exp
             exposure += exp
-            fracexpo += a.fracexpo
+            fracexpo += a.fracexpo * exp  # Time exposed at each pixel
 
-        specresp /= exposure
-        fracexpo /= exposure
+        specresp /= exposure  # Time averaged effective area
+        fracexpo /= exposure  # Time averaged fractional exposure
 
         return specresp, fracexpo, exposure
 
