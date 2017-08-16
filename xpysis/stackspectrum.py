@@ -8,7 +8,7 @@ ALLOWED_UNITS = KEV + ANGS
 
 __all__ = ['stack_spectra']
 
-def stack_spectra(spec0, speclist, weights=None):
+def stack_spectra(spec0, speclist, weights=None, weight_exp=False):
     """
     Stack a list of Spectrum objects
 
@@ -23,7 +23,12 @@ def stack_spectra(spec0, speclist, weights=None):
     speclist : list of xpysis.binspectrum.Spectrum objects
         A list of spectra to be stacked.
 
-    weights = None : a list of weights for each spectrum in speclist
+    weights = None : numpy.ndarray
+        A list of weights for each spectrum in speclist
+
+    weight_exp = False : bool
+        Set to true if you want the weights to be applied to the spectra
+        exposure times as well
 
     Due to the fact that python uses pointers to assign variables, the user
     needs to be careful about the inputs provided. Properties of `spec0` will
@@ -41,10 +46,14 @@ def stack_spectra(spec0, speclist, weights=None):
     assert isinstance(speclist, list), "Need to provide a list of Spectrum objects"
     assert len(speclist) > 1, "Need more than one spectrum to stack"
 
-    if weights in None:
-        weights = np.ones(len(speclist))
-    else:
+    cweights = np.ones(len(speclist))
+    if weights is not None:
         assert len(weights) == len(speclist), "ERROR: Inappropriate input for weights kwarg"
+        cweights = weights
+
+    expweights = np.ones(len(speclist))
+    if weight_exp:
+        expweights = cweights
 
     def _stack_counts(speclist, weights):
         s0     = speclist[0]
@@ -88,8 +97,8 @@ def stack_spectra(spec0, speclist, weights=None):
         return specresp, fracexpo, exposure
 
     # Modify / overwrite old stuff
-    spec0.counts       = _stack_counts(speclist)
-    arfresp, fracexpo, exposure = _stack_arf(speclist)
+    spec0.counts       = _stack_counts(speclist, cweights)
+    arfresp, fracexpo, exposure = _stack_arf(speclist, expweights)
     spec0.arf.specresp = arfresp
     spec0.arf.fracexpo = fracexpo
     spec0.exposure     = exposure  # Taken from ARF if available
