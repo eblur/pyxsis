@@ -8,7 +8,7 @@ ALLOWED_UNITS = KEV + ANGS
 
 __all__ = ['stack_spectra']
 
-def stack_spectra(spec0, speclist):
+def stack_spectra(spec0, speclist, weights=None):
     """
     Stack a list of Spectrum objects
 
@@ -38,6 +38,11 @@ def stack_spectra(spec0, speclist):
     assert isinstance(spec0, Spectrum)
     assert isinstance(speclist, list), "Need to provide a list of Spectrum objects"
     assert len(speclist) > 1, "Need more than one spectrum to stack"
+
+    if weights in None:
+        weights = np.zeros_like(spec0.counts)
+    else:
+        assert len(weights) == len(speclist), "ERROR: Inappropriate input for weights kwarg"
 
     def _stack_counts(speclist):
         s0     = speclist[0]
