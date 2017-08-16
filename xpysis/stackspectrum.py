@@ -75,15 +75,17 @@ def stack_spectra(spec0, speclist, weights=None, weight_exp=False):
             print("Cannot find exposure keyword from ARF, using PHA file")
         return result
 
-    def _stack_arf(speclist):
+    def _stack_arf(speclist, weights):
         # Do a time weighted average of the ARF response and fracexpo
+        # Unless triggered by user, "weights" is usually an array of ones
         a0       = speclist[0].arf
-        exposure = _arf_exp(speclist[0])
+        exposure = _arf_exp(speclist[0]) * weights[0]
         specresp = np.copy(a0.specresp) * exposure
         fracexpo = np.copy(a0.fracexpo) * exposure
 
-        for s in speclist[1:]:
-            a, exp = s.arf, _arf_exp(s)
+        for i in np.arange(1, len(speclist)):
+            s, w = speclist[i], weights[i]
+            a, exp = s.arf, _arf_exp(s) * w
             assert all(a.e_low == a0.e_low), "Grids on every arf need to match"
             assert all(a.e_high == a0.e_high), "Grids on every arf need to match"
             assert a.e_unit == a0.e_unit, "ARF grids need to be in the same units"
