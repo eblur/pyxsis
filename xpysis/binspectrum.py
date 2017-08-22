@@ -11,7 +11,8 @@ __all__ = ['Spectrum','group_channels','group_mincounts']
 class Spectrum(clarsach.XSpectrum):
     def __init__(self, filename, **kwargs):
         clarsach.XSpectrum.__init__(self, filename, verbose=False, **kwargs)
-        self._setbins_to_keV()  # Always keep binning in keV
+        if self.bin_unit in ANGS:
+            self._setbins_to_keV()  # Always keep binning in keV
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
