@@ -89,7 +89,9 @@ class Spectrum(clarsach.XSpectrum):
         assert all(bin_lo < bin_hi)
         assert all(bin_lo[1:] == bin_hi[:-1])
         assert len(result) == (max(binning) - min(binning) + 1)
-        assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
+        # Make sure no counts are lost
+        percent_diff = np.abs((np.sum(result) - np.sum(counts))/np.sum(counts))
+        assert percent_diff < 1.e-5, print("Binned counts are off by {} \%".format(percent_diff/100.))
 
         return bin_lo, bin_hi, result, np.sqrt(result)
 
