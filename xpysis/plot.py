@@ -2,7 +2,7 @@
 
 import numpy as np
 import clarsach
-import binspectrum
+from . import binspectrum
 
 KEV      = ['kev', 'keV']
 ANGS     = ['angs', 'angstrom', 'Angstrom', 'angstroms', 'Angstroms']

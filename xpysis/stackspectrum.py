@@ -1,6 +1,6 @@
 import numpy as np
 import clarsach
-from binspectrum import Spectrum
+from .binspectrum import Spectrum
 
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']

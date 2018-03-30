@@ -1,6 +1,6 @@
 import numpy as np
 import clarsach
-from bkgspectrum import BkgSpectrum
+from .bkgspectrum import BkgSpectrum
 
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
