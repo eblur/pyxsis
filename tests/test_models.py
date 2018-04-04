@@ -1,6 +1,6 @@
 import numpy as np
 import astropy.units as u
-from xpysis.models import Model, PowerLaw
+from pyxsis.models import Model, PowerLaw
 
 def test_model_superclass():
     names = ['a','b','c']
