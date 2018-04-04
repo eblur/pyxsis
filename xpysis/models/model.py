@@ -1,14 +1,14 @@
 import astropy.units as u
 
 class Model(object):
-    def __init__(par_keys, par_vals, par_lims, par_units):
+    def __init__(self, par_keys, par_vals, par_lims, par_units):
         """
         Model superclass
         ----------------
         par_keys : list of parameter names
         par_vals : list of initial parameter values
         par_lims : list of tuples containing parameter limits
-        par_units : list of parameter units (astropy unit)
+        par_units : list of parameter units (strings)
         """
         self.keys = par_keys
         self.vals = dict(zip(par_keys, par_vals))
@@ -22,4 +22,4 @@ class Model(object):
 
     def __getitem__(self, key):
         self._check_key_exists(key)
-        return self.vals[key] * self.units[key]
+        return self.Quantity(self.vals[key], self.units[key])
