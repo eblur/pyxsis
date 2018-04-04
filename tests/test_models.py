@@ -23,6 +23,8 @@ def test_model_superclass():
     assert m['c'].value == 10.0
     m.update({'a':3.0})
     assert m.vals['a'] == 3.0
+    # Check that placeholder method is there
+    assert m.calculate(1.0, 2.0) is None
 
 def test_powerlaw():
     # Check that it initializes
