@@ -28,13 +28,14 @@ class Model(object):
         assert key in self.keys, print("{} not a valid parameter key".format(key))
         return u.Quantity(self.vals[key], self.units[key])
 
-    def update_par(self, keys, new_vals):
+    def update(self, new_dict):
         # Finds the nearest limit
         def find_nearest_lim(v, l):
             if (v < l[0]): return l[0]
             if (v > l[1]): return l[1]
         # Set the new parameters
-        for k,v in zip(keys, new_vals):
+        for k in new_dict.keys():
+            v = new_dict[k]
             if self._check_lims(v, self.lims[k]):
                 self.vals[k] = v
             else:
