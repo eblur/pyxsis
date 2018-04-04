@@ -13,7 +13,7 @@ class Model(object):
         # Check that the parameter values fall within the limits
         # If they don't, return None
         for v,l in zip(par_vals, par_lims):
-            assert self._check_lims(v, l), return
+            assert self._check_lims(v, l)
         self.keys = par_keys
         self.vals = dict(zip(par_keys, par_vals))
         self.lims = dict(zip(par_keys, par_lims))
