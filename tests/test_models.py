@@ -35,4 +35,7 @@ def test_powerlaw():
     assert len(flux) == len(e_lo)
     assert flux.unit == u.Unit(m.units['norm'])
     # Check that doubling the norm parameter doubles the Flux
-    #new_norm
+    new_norm = m['norm'].value * 2.0
+    m2 = PowerLaw(new_norm)
+    f2 = m2.calculate(e_lo, e_hi)
+    assert np.sum(f2) == 2.0 * np.sum(flux)
