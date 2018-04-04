@@ -1,1 +1,1 @@
-from ..binspectrum import Spectrum
+from .model import Model
