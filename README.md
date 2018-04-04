@@ -29,10 +29,10 @@ python setup.py install
 ## Quick start
 
 ```
-import xpysis
-my_spectrum = xpysis.Spectrum('my_Chandra_HETG_file.pha', telescope='HETG')
+import pyxsis
+my_spectrum = pyxsis.Spectrum('my_Chandra_HETG_file.pha', telescope='HETG')
 
 import matplotlib.pyplot as plt
 ax = plt.subplot(111)
-xpysis.plot_counts(ax, my_spectrum, xunit='kev')
+pyxsis.plot_counts(ax, my_spectrum, xunit='kev')
 ```
