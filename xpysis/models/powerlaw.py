@@ -38,8 +38,8 @@ class PowerLaw(Model):
         assert len(ener_lo) == len(ener_hi)
         # Computes flux spectrum [phot cm^-2 s^-1] for given energy grid
         # integral over the power law model
-        norm = self['norm'].value
-        phoindex = self['phoindex'].value
+        norm = self['norm']
+        phoindex = self['phoindex']
         if phoindex == 1.0:
             r = np.log(ener_hi) - np.log(ener_lo)
         else:

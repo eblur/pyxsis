@@ -25,8 +25,14 @@ def test_model_superclass():
     assert m.vals['a'] == 3.0
 
 def test_powerlaw():
+    # Check that it initializes
     ener = np.linspace(1.0, 10.0)
     e_lo, e_hi = ener[:-1], ener[1:]
     m = PowerLaw()
+    # Check that the flux can be evaluated
     flux = m.calculate(e_lo, e_hi)
     assert flux is not None
+    assert len(flux) == len(e_lo)
+    assert flux.unit == u.Unit(m.units['norm'])
+    # Check that doubling the norm parameter doubles the Flux
+    #new_norm
