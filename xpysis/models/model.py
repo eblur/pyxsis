@@ -18,4 +18,4 @@ class Model(object):
 
     def __getitem__(self, key):
         assert key in self.keys, print("{} not a valid parameter key".format(key))
-        return self.Quantity(self.vals[key], self.units[key])
+        return u.Quantity(self.vals[key], self.units[key])
