@@ -1,6 +1,6 @@
 import numpy as np
 import astropy.units as u
-from xpysis.models import *
+from xpysis.models import Model, PowerLaw
 
 def test_model_superclass():
     names = ['a','b','c']
@@ -21,3 +21,12 @@ def test_model_superclass():
     assert m['a'].value == 2.5
     assert m['b'].value == 0.0
     assert m['c'].value == 10.0
+    m.update({'a':3.0})
+    assert m.vals['a'] == 3.0
+
+def test_powerlaw():
+    ener = np.linspace(1.0, 10.0)
+    e_lo, e_hi = ener[:-1], ener[1:]
+    m = PowerLaw()
+    flux = m.calculate(e_lo, e_hi)
+    assert flux is not None

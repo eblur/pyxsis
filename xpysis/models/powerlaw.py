@@ -6,7 +6,7 @@ __all__ = ['PowerLaw']
 class PowerLaw(Model):
     def __init__(self, norm=1.e-10, phoindex=2.0,
                  lims=[(0, 1.e10), (-10.,10.)],
-                 units=['s^{-1} cm^{-2}', '']):
+                 units=['s^-1 cm^-2', '']):
         """
         PowerLaw Model
         --------------
