@@ -16,10 +16,6 @@ class Model(object):
         self.units = dict(zip(par_keys, par_units))
         return
 
-    def _check_key_exists(self, key):
-        assert key in self.keys, print("{} not a valid parameter key".format(key))
-        return
-
     def __getitem__(self, key):
-        self._check_key_exists(key)
+        assert key in self.keys, print("{} not a valid parameter key".format(key))
         return self.Quantity(self.vals[key], self.units[key])
