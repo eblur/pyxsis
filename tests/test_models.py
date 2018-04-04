@@ -39,3 +39,6 @@ def test_powerlaw():
     m2 = PowerLaw(new_norm)
     f2 = m2.calculate(e_lo, e_hi)
     assert np.sum(f2) == 2.0 * np.sum(flux)
+    # Check that updating parameters works
+    m.update({'norm':new_norm})
+    assert np.sum(m.calculate(e_lo, e_hi)) == np.sum(f2)
