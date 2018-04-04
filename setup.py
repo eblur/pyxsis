@@ -8,12 +8,12 @@ import glob
 ##-------------------------------------------------
 ## Package setup
 
-setup(name='xpysis',
+setup(name='pyxsis',
       version='0.0',
       description='X-ray Python Spectral Interpretation System', 
       author='Lia Corrales',
       author_email='lia@astro.wisc.edu',
-      url='https://github.com/eblur/xpysis',
+      url='https://github.com/eblur/pyxsis',
       packages=find_packages(),
       license='LGPL-3.0',
       install_requires=[
