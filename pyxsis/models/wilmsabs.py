@@ -1,4 +1,6 @@
 import os
+import numpy as np
+import astropy.units as u
 from astropy.table import Table
 from scipy.interpolate import interp1d
 from .model import Model
@@ -19,4 +21,7 @@ class WilmsAbs(Model):
         tt = Table.read(fname, format='ascii')
         return interp1d(tt['col1'], tt['col2'])
 
-    #def calculate(self, ener_lo, ener_hi):
+    def calculate(self, ener_lo, ener_hi):
+        emid = 0.5 * (ener_lo + ener_hi)
+        tau  = self.xsect(emid) * u.cm**2 * self['nH']
+        return np.exp(-tau)

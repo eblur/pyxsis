@@ -50,3 +50,5 @@ def test_wilms_abs():
     e_lo, e_hi = ener[:-1], ener[1:]
     # Check that it initializes
     m = WilmsAbs()
+    # Check that it calculates
+    ext_fac = m.calculate(e_lo, e_hi)
