@@ -52,3 +52,5 @@ def test_wilms_abs():
     m = WilmsAbs()
     # Check that it calculates
     ext_fac = m.calculate(e_lo, e_hi)
+    # Check that it has the correct units
+    assert ext_fac.unit == u.Unit('')
