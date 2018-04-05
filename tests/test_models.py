@@ -54,3 +54,12 @@ def test_wilms_abs():
     ext_fac = m.calculate(e_lo, e_hi)
     # Check that it has the correct units
     assert ext_fac.unit == u.Unit('')
+    # Check that twice the column has twice the extinction
+    # Note: exp(-2.0*tau) = exp(-tau)^2
+    nh2 = 2.0 * m['nH'].value
+    m2  = WilmsAbs(nH=nh2)
+    ef2 = m2.calculate(e_lo, e_hi)
+    assert np.sum(ef2) == np.sum(ext_fac**2.0)
+    # Check that updating the parameters works
+    m.update({'nH':nh2})
+    assert np.sum(m.calculate(e_lo, e_hi)) == np.sum(ef2)
