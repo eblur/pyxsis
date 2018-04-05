@@ -31,6 +31,7 @@ def test_powerlaw():
     e_lo, e_hi = ener[:-1], ener[1:]
     # Check that it initializes
     m = PowerLaw()
+    m.info()
     # Check that the flux can be evaluated
     flux = m.calculate(e_lo, e_hi)
     assert flux is not None
@@ -50,6 +51,7 @@ def test_wilms_abs():
     e_lo, e_hi = ener[:-1], ener[1:]
     # Check that it initializes
     m = WilmsAbs()
+    m.info()
     # Check that it calculates
     ext_fac = m.calculate(e_lo, e_hi)
     # Check that it has the correct units

@@ -1,7 +1,7 @@
 import astropy.units as u
 
 class Model(object):
-    def __init__(self, par_keys, par_vals, par_lims, par_units):
+    def __init__(self, par_keys, par_vals, par_lims, par_units, name='Model'):
         """
         Model superclass
         ----------------
@@ -15,6 +15,7 @@ class Model(object):
         for v,l in zip(par_vals, par_lims):
             assert self._check_lims(v, l)
             assert l[1] > l[0]
+        self.name = name
         self.keys = par_keys
         self.vals = dict(zip(par_keys, par_vals))
         self.lims = dict(zip(par_keys, par_lims))
@@ -78,4 +79,16 @@ class Model(object):
         """
         Placeholder function. Returns None.
         """
+        return
+
+    # Print information about this model
+    def info(self):
+        print("\n" + "-" * 80)
+        print("{}".format(self.name))
+        print("{:15}{:10}{:23}{:10}".format('Parameter','Value','Limits','Unit'))
+        print("-" * 80)
+        for k in self.keys:
+            print("{:10}{:10}{:10}{:10}\t{:10}".format(
+            k, self.vals[k], self.lims[k][0], self.lims[k][0], self.units[k]
+            ))
         return

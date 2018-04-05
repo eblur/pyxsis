@@ -6,7 +6,8 @@ __all__ = ['PowerLaw']
 class PowerLaw(Model):
     def __init__(self, norm=1.e-10, phoindex=2.0,
                  lims=[(0, 1.e10), (-10.,10.)],
-                 units=['s^-1 cm^-2', '']):
+                 units=['s^-1 cm^-2', ''],
+                 name='PowerLaw'):
         """
         PowerLaw Model
         --------------
@@ -15,7 +16,9 @@ class PowerLaw(Model):
         phoindex : float
             Photon index for the power law spectrum
         """
-        Model.__init__(self, ['norm','phoindex'], [norm, phoindex], lims, units)
+        Model.__init__(self, ['norm','phoindex'],
+                       [norm, phoindex],
+                       lims, units, name=name)
         return
 
     ## Modified version of clarsach models

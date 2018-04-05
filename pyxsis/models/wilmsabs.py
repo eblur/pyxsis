@@ -11,8 +11,9 @@ def _find_tablefile(name):
     return data_path + name
 
 class WilmsAbs(Model):
-    def __init__(self, nH=1.e22, lims=[(0, 1.e24)], units=['cm^-2']):
-        Model.__init__(self, ['nH'], [nH], lims, units)
+    def __init__(self, nH=1.e22, lims=[(0, 1.e24)], units=['cm^-2'],
+                 name='WilmsAbs'):
+        Model.__init__(self, ['nH'], [nH], lims, units, name=name)
         self.xsect = self._read_xsect()
         return
 
