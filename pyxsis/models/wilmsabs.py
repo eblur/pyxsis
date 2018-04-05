@@ -1,11 +1,11 @@
 import os
 from astropy.table import Table
 from scipy.interpolate import interp1d
-from .model import model
+from .model import Model
 
 def _find_tablefile(name):
     root_path = os.path.dirname(__file__)
-    data_path = root_path + 'tables/'
+    data_path = root_path + '/tables/'
     return data_path + name
 
 class WilmsAbs(Model):

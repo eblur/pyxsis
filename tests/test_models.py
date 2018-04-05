@@ -1,6 +1,6 @@
 import numpy as np
 import astropy.units as u
-from pyxsis.models import Model, PowerLaw
+from pyxsis.models import Model, PowerLaw, WilmsAbs
 
 def test_model_superclass():
     names = ['a','b','c']
@@ -27,9 +27,9 @@ def test_model_superclass():
     assert m.calculate(1.0, 2.0) is None
 
 def test_powerlaw():
-    # Check that it initializes
     ener = np.linspace(1.0, 10.0)
     e_lo, e_hi = ener[:-1], ener[1:]
+    # Check that it initializes
     m = PowerLaw()
     # Check that the flux can be evaluated
     flux = m.calculate(e_lo, e_hi)
@@ -44,3 +44,9 @@ def test_powerlaw():
     # Check that updating parameters works
     m.update({'norm':new_norm})
     assert np.sum(m.calculate(e_lo, e_hi)) == np.sum(f2)
+
+def test_wilms_abs():
+    ener = np.linspace(1.0, 10.0)
+    e_lo, e_hi = ener[:-1], ener[1:]
+    # Check that it initializes
+    m = WilmsAbs()
