@@ -5,10 +5,16 @@ class Model(object):
         """
         Model superclass
         ----------------
-        par_keys : list of parameter names
-        par_vals : list of initial parameter values
-        par_lims : list of tuples containing parameter limits
-        par_units : list of parameter units (strings)
+        par_keys : list of strings
+            parameter names
+        par_vals : list of floats
+            initial parameter values
+        par_lims : list of tuples
+            list of parameter limits
+        par_units : list of strings
+            unit string for each parameter
+        name : string
+            name describing the model
         """
         # Check that the parameter values fall within the limits
         # If they don't, return None
@@ -83,6 +89,9 @@ class Model(object):
 
     # Print information about this model
     def info(self):
+        """
+        Prints model parameters, values, limits, and units.
+        """
         print("\n" + "-" * 80)
         print("{}".format(self.name))
         print("{:15}{:10}{:23}{:10}".format('Parameter','Value','Limits','Unit'))
