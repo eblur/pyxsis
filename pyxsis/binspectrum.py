@@ -16,6 +16,8 @@ class Spectrum(clarsach.XSpectrum):
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
+        self.model = None
+        self.model_counts = None
 
     def notice_values(self, bmin, bmax, unit='keV'):
         assert unit in ALLOWED_UNITS
@@ -105,6 +107,29 @@ class Spectrum(clarsach.XSpectrum):
         assert all(self.bin_hi == bkgspec.bin_hi), "Grids need to be the same"
         assert self.bin_unit == bkgspec.bin_unit, "Bin units need to be the same"
         self.bkg = bkgspec
+
+    def assign_model(self, model):
+        self.model = model
+
+    def evaluate_model(self):
+        assert self.model is not None
+        model_flux  = self.model(self.bin_lo, self.bin_hi)
+        model_w_arf = self.arf.apply_arf(model_flux)
+        model_w_rmf = self.rmf.apply_rmf(model_w_arf)
+        self.model_counts = model_w_rmf
+
+    def bin_model_counts(self, unit='keV'):
+        assert self.model_counts is not None
+        # Use noticed regions only
+        binning = self.binning[self.notice]
+        counts  = self.model_counts[self.notice]
+        result  = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
+        # Figure out how counts should be arranged
+        if unit in KEV:
+            sl = slice(None, None, 1)
+        if unit in ANGS:
+            sl = slice(None, None, -1)
+        return result[sl]
 
 ## ----- Binning functions
 
