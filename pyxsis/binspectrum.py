@@ -108,12 +108,7 @@ class Spectrum(clarsach.XSpectrum):
         assert self.bin_unit == bkgspec.bin_unit, "Bin units need to be the same"
         self.bkg = bkgspec
 
-    def assign_model(self, model):
-        self.model = model
-
-    def evaluate_model(self):
-        assert self.model is not None
-        model_flux  = self.model(self.bin_lo, self.bin_hi)
+    def evaluate_model(self, model_flux):
         model_w_arf = self.arf.apply_arf(model_flux)
         model_w_rmf = self.rmf.apply_rmf(model_w_arf)
         self.model_counts = model_w_rmf
