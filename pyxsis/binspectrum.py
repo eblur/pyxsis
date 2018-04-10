@@ -114,7 +114,6 @@ class Spectrum(clarsach.XSpectrum):
         self.model_counts = model_w_rmf
 
     def bin_model_counts(self, unit='keV'):
-        assert self.model_counts is not None
         # Use noticed regions only
         binning = self.binning[self.notice]
         counts  = self.model_counts[self.notice]
