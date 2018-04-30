@@ -5,7 +5,7 @@ from astropy.units import si
 from clarsach.respond import RMF, ARF, _Angs_keV
 from specutils import Spectrum1D
 
-__all__ = ['load_from_file', 'XSpectrum']
+__all__ = ['XSpectrum']
 
 KEV      = ['kev','keV']
 ANGS     = ['angs','angstrom','Angstrom','angstroms','Angstroms']
@@ -55,7 +55,7 @@ class XSpectrum(Spectrum1D):
         telescope : string ['HETG' | 'ACIS']
             String description of instrument to use,
             only Chandra is supported right now
-        
+
         Attributes
         ----------
         bin_lo : numpy.array
@@ -89,7 +89,13 @@ class XSpectrum(Spectrum1D):
 
         # instantiate with Spectrum1D
         bin_mid = 0.5 * (bin_lo + bin_hi)
-        Spectrum1D.__init__(self, bin_mid, counts)
+        spectral_unit = ''
+        if bin_unit in ANGS:
+            spectral_unit = u.angstrom
+        if bin_unit in KEV:
+            spectral_unit = u.keV
+        Spectrum1D.__init__(self, spectral_axis=bin_mid, flux=counts,
+                            spectral_axis_unit=spectral_unit, unit='')
 
         # Add other attributes
         self.bin_lo   = bin_lo
@@ -105,6 +111,10 @@ class XSpectrum(Spectrum1D):
         if self.bin_unit != self.rmf.energ_unit:
             print("Warning: RMF units and pha file units are not the same!!!")
         return
+
+    @property
+    def counts(self):
+        return self.flux
 
     def __store_path(self, filename):
         self.path = '/'.join(filename.split('/')[0:-1]) + "/"
@@ -168,6 +178,6 @@ class XSpectrum(Spectrum1D):
         # Now hard set everything
         self.bin_lo = new_blo
         self.bin_hi = new_bhi
-        self.counts = new_cts
+        self.flux   = new_cts
         self.bin_unit = si.keV
         return
