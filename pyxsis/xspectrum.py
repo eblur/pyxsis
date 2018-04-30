@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from astropy.io import fits
-from astropy.units import si
+import astropy.units as u
 from clarsach.respond import RMF, ARF, _Angs_keV
 from specutils import Spectrum1D
 
@@ -45,7 +45,7 @@ def _read_chandra(filename):
 # This code is from my dev version of clarsach
 # https://github.com/eblur/clarsach/blob/master/clarsach/spectrum.py
 class XSpectrum(Spectrum1D):
-    def __init__(filename, telescope='HETG'):
+    def __init__(self, filename, telescope='HETG'):
         """
         Inputs
         ------
@@ -83,9 +83,9 @@ class XSpectrum(Spectrum1D):
         assert telescope in ALLOWED_TELESCOPES
         # Right now only Chandra is supported
         if telescope == 'HETG':
-            bin_lo, bin_hi, bin_unit, counts, arf, rmf = _read_chandra(filename)
+            bin_lo, bin_hi, bin_unit, counts, rmf, arf, exposure = _read_chandra(filename)
         elif telescope == 'ACIS':
-            bin_lo, bin_hi, bin_unit, counts, arf, rmf = _read_chandra(filename)
+            bin_lo, bin_hi, bin_unit, counts, rmf, arf, exposure = _read_chandra(filename)
 
         # instantiate with Spectrum1D
         bin_mid = 0.5 * (bin_lo + bin_hi)
@@ -102,9 +102,11 @@ class XSpectrum(Spectrum1D):
         self.bin_hi   = bin_hi
         self.bin_unit = bin_unit
         self.exposure = exposure
+        print("loading rmf file: {}".format(rmf))
         self.rmf = RMF(rmf)
+        print("loading arf file: {}".format(arf))
         self.arf = ARF(arf)
-        result.__store_path(filename)
+        self.__store_path(filename)
 
         if self.bin_unit != self.arf.e_unit:
             print("Warning: ARF units and pha file units are not the same!!!")
