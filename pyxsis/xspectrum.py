@@ -94,6 +94,7 @@ class XSpectrum(Spectrum1D):
             spectral_unit = u.angstrom
         if bin_unit in KEV:
             spectral_unit = u.keV
+        print("Spectral unit is {}".format(spectral_unit))
         Spectrum1D.__init__(self, spectral_axis=bin_mid, flux=counts,
                             spectral_axis_unit=spectral_unit, unit='')
 
