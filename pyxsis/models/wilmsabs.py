@@ -2,7 +2,7 @@ import os
 import numpy as np
 import astropy.units as u
 from astropy.table import Table
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
 from .model import Model
 
 def _find_tablefile(name):
@@ -36,7 +36,12 @@ class WilmsAbs(Model):
         """
         fname = _find_tablefile('cosplot_table.txt')
         tt = Table.read(fname, format='ascii')
-        return interp1d(tt['col1'], tt['col2'])
+        # Hold on to these values for debugging
+        self.egrid = tt['col1']
+        self.xsectvals = tt['col2']
+        # Will returns an interpolator that does linear interpolation
+        # when we request values beyond the limits of egrid
+        return InterpolatedUnivariateSpline(tt['col1'], tt['col2'], k=1)
 
     def calculate(self, ener_lo, ener_hi):
         """
