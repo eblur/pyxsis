@@ -18,6 +18,7 @@ class WilmsAbs(Model):
         --------------
         Wilms et al. (2000) model for interstellar absorption.
         Uses table from tbnew model, as of 2015.07.08
+        This model is not to be trusted for E > 12 keV
 
         nH : float
             Hydrogen column density [cm^-2]
