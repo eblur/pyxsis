@@ -36,7 +36,7 @@ class PowerLaw(Model):
 
         Returns
         -------
-        Flux = norm * np.power(emid, -phoindex) where emid = 0.5 * (ener_lo + ener_hi) and has units of keV
+        Flux per bin (photon/cm**2/s)
         """
         assert len(ener_lo) == len(ener_hi)
         # Computes flux spectrum [phot cm^-2 s^-1] for given energy grid
