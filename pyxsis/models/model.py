@@ -43,6 +43,26 @@ class Model(object):
         result = (val >= lim[0]) & (val <= lim[1])
         return result
 
+    def check_par_lims(self, new_par_dict):
+        """
+        Parameters
+        ----------
+        new_par_dict : dictionary
+            Dictionary keys are the parameter names
+            Dictionary values are test values for each parameter
+
+        Returns
+        -------
+        True if all of the test parameter values are within the limits
+        set by self.lims
+        """
+        for k in new_par_dict.keys():
+            if self._check_lims(new_par_dict[k], self.lims[k]):
+                pass
+            else:
+                return False
+        return True
+
     def __getitem__(self, key):
         """
         Parameters
