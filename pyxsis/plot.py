@@ -26,7 +26,7 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
         ylabel = 'Counts %s$^{-1}$' % xunit
 
     ax.errorbar(mid, cts/dbin, yerr=cts_err/dbin,
-                ls='', markersize=0, color='k', capsize=0, alpha=0.5)
+                ls='', markersize=0, color='k', capsize=0, alpha=0.5, lw=1)
     ax.step(lo, cts/dbin, where='post', **kwargs)
     ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)
@@ -75,7 +75,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
 
     # Now plot it
     ax.errorbar(mid, flux/dbin, yerr=f_err/dbin,
-                ls='', marker=None, color='k', capsize=0, alpha=0.5)
+                ls='', marker=None, color='k', capsize=0, alpha=0.5, lw=1)
     ax.step(lo, flux/dbin, where='post', **kwargs)
     ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)
