@@ -11,9 +11,8 @@ ALLOWED_UNITS = KEV + ANGS
 
 class XBinSpectrum(XraySpectrum1D):
     def __init__(self, from_file=None, format='chandra_hetg', **kwargs):
-        #clarsach.XSpectrum.__init__(self, filename, **kwargs)
-        #XraySpectrum1D.__init__(self)
         if from_file is None:
+            # this should never really happen. Need to figure out work around for testing
             XraySpectrum1D.__init__(self, np.array([]), np.array([]), u.angstrom,
                                     []*u.ct, 1.0*u.second, **kwargs)
         else:
@@ -22,12 +21,14 @@ class XBinSpectrum(XraySpectrum1D):
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
 
-# myspectrum = XraySpectrum1D.read(filename, format='chandra_hetg')
-
-## immutable -- if we need to change something about the spectrum
-## (e.g., bin_low), return a new spectrum object with the change
-'''
+    # Need to fix this for the fact that the lo and hi edges differ depending on unit
     def notice_values(self, bmin, bmax, unit='keV'):
+        bin_edges  = np.append(self.bin_lo, self.bin_hi[-1])
+        unit_edges = self.bin_edges.to(u.Unit(unit), equivalencies=u.spectral())
+        self.notice = (unit_edges >= bmin) & (unit_edges <= bmax)[:-1]
+
+
+
         assert unit in ALLOWED_UNITS
         if unit in ANGS:
             emin = clarsach.respond.CONST_HC / bmax
@@ -39,6 +40,7 @@ class XBinSpectrum(XraySpectrum1D):
         assert self.bin_unit in KEV
         self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
 
+'''
     def notice_all(self):
         # Resets the notice attribute
         self.notice = np.ones_like(self.counts, dtype=bool)
