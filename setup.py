@@ -10,7 +10,7 @@ import glob
 
 setup(name='pyxsis',
       version='0.0',
-      description='X-ray Python Spectral Interpretation System', 
+      description='X-ray Python Spectral Interpretation System',
       author='Lia Corrales',
       author_email='lia@astro.wisc.edu',
       url='https://github.com/eblur/pyxsis',
@@ -18,6 +18,6 @@ setup(name='pyxsis',
       license='LGPL-3.0',
       install_requires=[
         'numpy>=1.10',
-        'astropy>=2.0.0',
-        'clarsach>=0.0.0']
+        'astropy>=3.0.0',
+        'specutils>=0.5']
 )
