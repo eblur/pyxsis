@@ -22,9 +22,9 @@ class XBinSpectrum(XraySpectrum1D):
         self.bkg = None
 
     def notice_values(self, bmin, bmax, unit='keV'):
-        bin_edges    = np.append(self.bin_lo, self.bin_hi[-1])
+        bin_edges    = np.append(self.bin_lo, self.bin_hi[-1]) * u.bin_unit
         unit_edges   = self.bin_edges.to(u.Unit(unit), equivalencies=u.spectral())
-        notice_edges = (unit_edges >= bmin) & (unit_edges <= bmax)
+        notice_edges = (unit_edges >= bmin * u.Unit(unit)) & (unit_edges <= bmax * u.Unit(unit))
         self.notice  = notice_edges[1:]
 '''
     def notice_all(self):
