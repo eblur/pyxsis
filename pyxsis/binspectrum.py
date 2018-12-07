@@ -21,25 +21,11 @@ class XBinSpectrum(XraySpectrum1D):
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
 
-    # Need to fix this for the fact that the lo and hi edges differ depending on unit
     def notice_values(self, bmin, bmax, unit='keV'):
-        bin_edges  = np.append(self.bin_lo, self.bin_hi[-1])
-        unit_edges = self.bin_edges.to(u.Unit(unit), equivalencies=u.spectral())
-        self.notice = (unit_edges >= bmin) & (unit_edges <= bmax)[:-1]
-
-
-
-        assert unit in ALLOWED_UNITS
-        if unit in ANGS:
-            emin = clarsach.respond.CONST_HC / bmax
-            emax = clarsach.respond.CONST_HC / bmin
-        if unit in KEV:
-            emin, emax = bmin, bmax
-
-        # Make sure the user hasn't changed bin_units to angstrom
-        assert self.bin_unit in KEV
-        self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
-
+        bin_edges    = np.append(self.bin_lo, self.bin_hi[-1])
+        unit_edges   = self.bin_edges.to(u.Unit(unit), equivalencies=u.spectral())
+        notice_edges = (unit_edges >= bmin) & (unit_edges <= bmax)
+        self.notice  = notice_edges[1:]
 '''
     def notice_all(self):
         # Resets the notice attribute
