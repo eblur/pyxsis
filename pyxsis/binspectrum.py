@@ -13,7 +13,7 @@ class XBinSpectrum(XraySpectrum1D):
     def __init__(self, from_file=None, format='chandra_hetg', **kwargs):
         if from_file is None:
             # this should never really happen. Need to figure out work around for testing
-            XraySpectrum1D.__init__(self, np.array([]), np.array([]), u.angstrom,
+            XraySpectrum1D.__init__(self, []*u.angstrom. []*u.angstrom,
                                     []*u.ct, 1.0*u.second, **kwargs)
         else:
             XraySpectrum1D.read(self, from_file, format=format, **kwargs)
@@ -21,10 +21,29 @@ class XBinSpectrum(XraySpectrum1D):
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
 
-    def notice_values(self, bmin, bmax, unit='keV'):
-        bin_edges    = np.append(self.bin_lo, self.bin_hi[-1]) * u.bin_unit
-        unit_edges   = self.bin_edges.to(u.Unit(unit), equivalencies=u.spectral())
-        notice_edges = (unit_edges >= bmin * u.Unit(unit)) & (unit_edges <= bmax * u.Unit(unit))
+    def notice_values(self, bmin, bmax):
+        """
+        Define edges for spectral regions to notice. Notices regions exclusively.
+
+        >>> XBinSpectrum.notice(1.0*u.keV, 3.0*u.keV)
+
+        will notice *only* the region between 1 and 3 keV.
+
+        Parameters
+        ----------
+        bmin : astropy.Quantity
+            Minimum value for the notice region
+
+        bmax : astropy.Quantity
+            Maxium value for the notice region
+
+        Returns
+        -------
+        Modifies the XraySpectrum1D.notice attribute.
+        """
+        bin_edges    = np.append(self.bin_lo, self.bin_hi[-1])
+        unit_edges   = self.bin_edges.to(bmin.unit, equivalencies=u.spectral())
+        notice_edges = (unit_edges >= bmin) & (unit_edges <= bmax)
         self.notice  = notice_edges[1:]
 '''
     def notice_all(self):
