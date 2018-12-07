@@ -1,7 +1,6 @@
 ## Plotting functions
 
 import numpy as np
-import clarsach
 from . import binspectrum
 
 KEV      = ['kev', 'keV']

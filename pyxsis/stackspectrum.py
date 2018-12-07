@@ -1,5 +1,5 @@
 import numpy as np
-import clarsach
+#import clarsach
 from .binspectrum import Spectrum
 
 KEV  = ['kev', 'keV']

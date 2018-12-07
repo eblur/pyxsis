@@ -2,7 +2,7 @@ import os
 import numpy as np
 from astropy.io import fits
 import astropy.units as u
-from clarsach.respond import RMF, ARF, _Angs_keV
+#from clarsach.respond import RMF, ARF, _Angs_keV
 from specutils import Spectrum1D
 
 __all__ = ['XSpectrum']

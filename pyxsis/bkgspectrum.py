@@ -2,7 +2,7 @@ import os
 import numpy as np
 from astropy.io import fits
 from astropy.units import si
-import clarsach
+#import clarsach
 
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']

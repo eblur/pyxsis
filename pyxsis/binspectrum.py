@@ -1,22 +1,32 @@
 import numpy as np
-import clarsach
-from .bkgspectrum import BkgSpectrum
+import astropy.units as u
+from specutils import XraySpectrum1D
+#from .bkgspectrum import BkgSpectrum
 
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS
 
-__all__ = ['Spectrum','group_channels','group_mincounts']
+#__all__ = ['Spectrum','group_channels','group_mincounts']
 
-class Spectrum(clarsach.XSpectrum):
-    def __init__(self, filename, **kwargs):
-        clarsach.XSpectrum.__init__(self, filename, **kwargs)
-        if self.bin_unit in ANGS:
-            self._setbins_to_keV()  # Always keep binning in keV
+class XBinSpectrum(XraySpectrum1D):
+    def __init__(self, from_file=None, format='chandra_hetg', **kwargs):
+        #clarsach.XSpectrum.__init__(self, filename, **kwargs)
+        #XraySpectrum1D.__init__(self)
+        if from_file is None:
+            XraySpectrum1D.__init__(self, np.array([]), np.array([]), u.angstrom,
+                                    []*u.ct, 1.0*u.second, **kwargs)
+        else:
+            XraySpectrum1D.read(self, from_file, format=format, **kwargs)
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
 
+# myspectrum = XraySpectrum1D.read(filename, format='chandra_hetg')
+
+## immutable -- if we need to change something about the spectrum
+## (e.g., bin_low), return a new spectrum object with the change
+'''
     def notice_values(self, bmin, bmax, unit='keV'):
         assert unit in ALLOWED_UNITS
         if unit in ANGS:
@@ -175,3 +185,4 @@ def group_mincounts(spectrum, mc):
 
     spectrum.binning = result
     return
+'''
