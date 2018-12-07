@@ -10,11 +10,9 @@ ALLOWED_UNITS = KEV + ANGS
 #__all__ = ['Spectrum','group_channels','group_mincounts']
 
 class XBinSpectrum(XraySpectrum1D):
-    def __init__(self, from_file=None, format='chandra_hetg', **kwargs):
+    def __init__(self, *args, from_file=None, format='chandra_hetg', **kwargs):
         if from_file is None:
-            # this should never really happen. Need to figure out work around for testing
-            XraySpectrum1D.__init__(self, []*u.angstrom. []*u.angstrom,
-                                    []*u.ct, 1.0*u.second, **kwargs)
+            XraySpectrum1D.__init__(self, *args, **kwargs)
         else:
             XraySpectrum1D.read(self, from_file, format=format, **kwargs)
         self.notice  = np.ones_like(self.counts, dtype=bool)
