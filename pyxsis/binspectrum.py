@@ -19,7 +19,7 @@ class XBinSpectrum(XraySpectrum1D):
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
 
-    def notice_values(self, bmin, bmax):
+    def notice_range(self, bmin, bmax):
         """
         Define edges for spectral regions to notice. Notices regions exclusively.
 
@@ -39,10 +39,10 @@ class XBinSpectrum(XraySpectrum1D):
         -------
         Modifies the XraySpectrum1D.notice attribute.
         """
-        bin_edges    = np.append(self.bin_lo, self.bin_hi[-1])
-        unit_edges   = self.bin_edges.to(bmin.unit, equivalencies=u.spectral())
+        bin_edges    = np.append(self.bin_lo.value, self.bin_hi[-1].value) * self.bin_lo.unit
+        unit_edges   = bin_edges.to(bmin.unit, equivalencies=u.spectral())
         notice_edges = (unit_edges >= bmin) & (unit_edges <= bmax)
-        self.notice  = notice_edges[1:]
+        self.notice  = notice_edges[:-1]
 '''
     def notice_all(self):
         # Resets the notice attribute
