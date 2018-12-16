@@ -43,6 +43,9 @@ class XBinSpectrum(XraySpectrum1D):
         unit_edges   = bin_edges.to(bmin.unit, equivalencies=u.spectral())
         notice_edges = (unit_edges >= bmin) & (unit_edges <= bmax)
         self.notice  = notice_edges[:-1]
+        #unit_lo   = self.bin_lo.to(bmin.unit, equivalencies=u.spectral())
+        #unit_hi   = self.bin_hi.to(bmax.unit, equivalencies=u.spectral())
+        #self.notice = (unit_lo >= bmin) & (unit_hi <= bmax)
 '''
     def notice_all(self):
         # Resets the notice attribute
