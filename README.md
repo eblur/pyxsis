@@ -36,3 +36,39 @@ import matplotlib.pyplot as plt
 ax = plt.subplot(111)
 pyxsis.plot_counts(ax, my_spectrum, xunit='kev')
 ```
+
+## Installing a development version of pyXsis
+
+These instructions teach you how to create an Anaconda environment for pyXsis development.
+
+```
+conda create -n pyxsis-dev python=3
+source activate pyxsis-dev
+conda install numpy scipy matplotlib astropy
+```
+
+Go to the folder where you would like to keep your libraries. Then install [Clarsach](https://github.com/dhuppenkothen/clarsach).
+```
+git clone git@github.com:dhuppenkothen/clarsach.git
+cd clarsach
+python setup.py install
+cd ..
+```
+
+Now clone and install pyXsis.
+```
+git clone git@github.com:eblur/pyxsis.git
+cd pyxsis
+python setup.py develop
+```
+
+If you use Jupyter notebooks, you can install the conda environment as a separate kernel, using the `ipykernel` package.
+```
+conda install ipykernel
+python -m ipykernel install --user --name pyxsis-dev --display-name "pyxsis-dev"
+```
+
+When you are done playing with pyXsis, you can exit out the conda environment with:
+```
+source deactivate
+```
