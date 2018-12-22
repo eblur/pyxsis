@@ -1,5 +1,6 @@
 import numpy as np
 import astropy.units as u
+
 from specutils import XraySpectrum1D
 #from .bkgspectrum import BkgSpectrum
 
@@ -14,10 +15,22 @@ class XBinSpectrum(XraySpectrum1D):
         if from_file is None:
             XraySpectrum1D.__init__(self, *args, **kwargs)
         else:
-            XraySpectrum1D.read(self, from_file, format=format, **kwargs)
+            # I don't know how to make this inherit properly
+            temp = XraySpectrum1D.read(from_file, format=format) # , **kwargs)
+            XraySpectrum1D.__init__(self, temp.bin_lo, temp.bin_hi,
+                                    temp.counts, temp.exposure, **kwargs)
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts)
         self.bkg = None
+
+    ##-- I wrote these properties for convenience
+    @property
+    def bmid_keV(self):
+        return self.spectral_axis.to(u.keV, equivalencies=u.spectral())
+
+    @property
+    def bmid_angs(self):
+        return self.spectral_axis.to(u.angstrom, equivalencies=u.spectral())
 
     def notice_range(self, bmin, bmax):
         """
@@ -39,13 +52,12 @@ class XBinSpectrum(XraySpectrum1D):
         -------
         Modifies the XraySpectrum1D.notice attribute.
         """
-        bin_edges    = np.append(self.bin_lo.value, self.bin_hi[-1].value) * self.bin_lo.unit
-        unit_edges   = bin_edges.to(bmin.unit, equivalencies=u.spectral())
-        notice_edges = (unit_edges >= bmin) & (unit_edges <= bmax)
-        self.notice  = notice_edges[:-1]
-        #unit_lo   = self.bin_lo.to(bmin.unit, equivalencies=u.spectral())
-        #unit_hi   = self.bin_hi.to(bmax.unit, equivalencies=u.spectral())
-        #self.notice = (unit_lo >= bmin) & (unit_hi <= bmax)
+        bmin0 = bmin.to(self.bin_lo.unit, equivalencies=u.spectral())
+        bmax0 = bmax.to(self.bin_lo.unit, equivalencies=u.spectral())
+        imin  = (self.bin_lo >= min(bmin0, bmax0))
+        imax  = (self.bin_hi <= max(bmin0, bmax0))
+        self.notice  = (imin & imax)
+
 '''
     def notice_all(self):
         # Resets the notice attribute

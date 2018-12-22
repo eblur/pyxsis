@@ -31,8 +31,8 @@ def test_notice():
     emin, emax = 3.0 * u.keV, 5.0 * u.keV
     test_spec.notice_range(emin, emax)
     test_notice_keV = test_spec.spectral_axis[test_spec.notice].to(u.keV, equivalencies=u.spectral())
-    #assert np.all(test_notice_keV >= emin)
-    #assert np.all(test_notice_keV <= emax)
+    assert np.all(test_notice_keV >= emin)
+    assert np.all(test_notice_keV <= emax)
 
     # test that the noticed values conform to the intervals (Angstroms)
     amax = emin.to(u.angstrom, equivalencies=u.spectral())
