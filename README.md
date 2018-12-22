@@ -8,15 +8,20 @@ This python library owes it's inspiration to the [Interactive Spectral Interpret
 
 ## Install instructions
 
-Download the repository from github
+First download my version of _clarsach_ from Github and install it:
 
 ```
-git clone https://github.com/eblur/xpysis.git
+git clone https://github.com/eblur/clarsach.git
+cd clarsach
+python setup.py install
+cd ..
 ```
 
-Move into the _xpysis_ directory and run _setup.py_
+Next, download the _pyxsis_ repository from Github and install it:
 
 ```
+git clone https://github.com/eblur/pyxsis.git
+cd pyxsis
 python setup.py install
 ```
 
@@ -49,7 +54,7 @@ conda install numpy scipy matplotlib astropy
 
 Go to the folder where you would like to keep your libraries. Then install [Clarsach](https://github.com/dhuppenkothen/clarsach).
 ```
-git clone git@github.com:dhuppenkothen/clarsach.git
+git clone git@github.com:eblur/clarsach.git
 cd clarsach
 python setup.py install
 cd ..
