@@ -58,37 +58,52 @@ class XBinSpectrum(XraySpectrum1D):
         imax  = (self.bin_hi <= max(bmin0, bmax0))
         self.notice  = (imin & imax)
 
-'''
     def notice_all(self):
-        # Resets the notice attribute
+        """
+        Resets the notice attribute to notice the entire range.
+        """
         self.notice = np.ones_like(self.counts, dtype=bool)
 
     def reset_binning(self):
-        # Resets the binning attribute
+        """
+        Resets the binning attribute
+        """
         self.binning = np.zeros_like(self.counts)
 
-    def bin_counts(self, unit='keV', bkgsub=True, usebackscal=True):
-        # It's assumed that the spectrum is stored in keV bin units
-        assert self.bin_unit in KEV
+    def binned_counts(self, bkgsub=False, usebackscal=True):
+        """
+        Returns the binned counts histogram from the noticed spectral region.
 
-        # Returns lo, hi, mid, counts
-        # self.binning is set to all zeros if there is no binning defined
+        Parameters
+        ----------
+        bkgsub : bool
+            If True, supply the background subtracted region spectrum
+            (only if a background spectrum is supplied)
+
+        usebackscal : bool
+            If True, scales the background by the backscal value
+
+        Returns
+        -------
+        bin_lo : astropy.Quantity
+            Lower edges for the new bins
+
+        bin_hi : astropy.Quantity
+            Higher edges for the new bins
+
+        counts : astropy.Quantity
+            Counts for the new bins
+
+        cts_err : astropy.Quantity
+            Error on the new bins
+        """
         if all(self.binning == 0.0):
             counts  = self.counts[self.notice]
-            ener_lo = self.bin_lo[self.notice]
-            ener_hi = self.bin_hi[self.notice]
-            cts_err = np.sqrt(counts)
+            bin_lo = self.bin_lo[self.notice]
+            bin_hi = self.bin_hi[self.notice]
+            cts_err = np.sqrt(counts.value) * u.ct
         else:
-            ener_lo, ener_hi, counts, cts_err = self._parse_binning()
-
-        # Figure out how counts should be arranged
-        if unit in KEV:
-            sl = slice(None, None, 1)
-            new_lo, new_hi = ener_lo, ener_hi
-        if unit in ANGS:
-            sl = slice(None, None, -1)
-            new_lo = clarsach.respond.CONST_HC/ener_hi[sl]
-            new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
+            bin_lo, bin_hi, counts, cts_err = self._parse_binning()
 
         if bkgsub and (self.bkg is not None):
             blo, bhi, bcts, bcts_err = self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
@@ -96,7 +111,7 @@ class XBinSpectrum(XraySpectrum1D):
             new_error  = np.sqrt(cts_err[sl]**2 + bcts_err[sl]**2)
             return new_lo, new_hi, new_counts, new_error
         else:
-            return new_lo, new_hi, counts[sl], np.sqrt(counts[sl])
+            return new_lo, new_hi, counts, cts_err
 
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
@@ -105,32 +120,64 @@ class XBinSpectrum(XraySpectrum1D):
 
         # Use noticed regions only
         binning = self.binning[self.notice]
-        counts  = self.counts[self.notice]
-        ener_lo = self.bin_lo[self.notice]
-        ener_hi = self.bin_hi[self.notice]
+        counts  = self.counts[self.notice].value
+        bin_lo  = self.bin_lo[self.notice].value
+        bin_hi  = self.bin_hi[self.notice].value
 
-        bin_lo = np.array([ener_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)])
-        bin_hi = np.array([ener_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
+        new_bin_lo = np.array([bin_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)])
+        new_bin_hi = np.array([bin_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
         result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
 
-        # Unit tests
-        assert len(bin_lo) == (max(binning) - min(binning) + 1)
-        assert len(bin_hi) == (max(binning) - min(binning) + 1)
-        assert all(bin_lo < bin_hi)
-        assert all(bin_lo[1:] == bin_hi[:-1])
+        # Accuracy checks
+        assert len(new_bin_lo) == (max(binning) - min(binning) + 1)
+        assert len(new_bin_hi) == (max(binning) - min(binning) + 1)
+        assert all(new_bin_lo[1:] == new_bin_hi[:-1])
         assert len(result) == (max(binning) - min(binning) + 1)
         assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
 
-        return bin_lo, bin_hi, result, np.sqrt(result)
+        new_bin_lo *= self.bin_lo.unit
+        new_bin_hi *= self.bin_lo.unit
+        result *= u.ct
+        result_err = np.sqrt(result.value) * u.ct
+
+        return new_bin_lo, new_bin_hi, result, result_err
 
     def bin_bkg(self, usebackscal=True):
-        # Shortcut function for returning background
+        """
+        Return the background spectrum using the same spectral binning.
+
+        Parameters
+        ----------
+        usebackscal : bool
+            If True, returns the background scaled by the backscal value.
+
+        Returns
+        -------
+        bin_lo : astropy.Quantity
+            Lower edges for the new background bins
+
+        bin_hi : astropy.Quantity
+            Higher edges for the new background bins
+
+        counts : astropy.Quantity
+            Counts for the binned background histogram
+
+        cts_err : astropy.Quantity
+            Error on the new background bins
+        """
         return self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
 
     def assign_bkg(self, bkgspec):
+        """
+        Assign a background spectrum.
+
+        Parameters
+        ----------
+        bkgspec : pyxsis.BkgSpectrum
+        """
         assert isinstance(bkgspec, BkgSpectrum)
-        assert all(self.bin_lo == bkgspec.bin_lo), "Grids need to be the same"
-        assert all(self.bin_hi == bkgspec.bin_hi), "Grids need to be the same"
+        assert all(self.bin_lo == bkgspec.bin_lo), "Background grid needs to be the same"
+        assert all(self.bin_hi == bkgspec.bin_hi), "Background grid need to be the same"
         assert self.bin_unit == bkgspec.bin_unit, "Bin units need to be the same"
         self.bkg = bkgspec
 
@@ -205,4 +252,3 @@ def group_mincounts(spectrum, mc):
 
     spectrum.binning = result
     return
-'''
