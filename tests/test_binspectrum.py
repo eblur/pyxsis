@@ -65,13 +65,14 @@ def test_notice():
 
 # Test binning with and without notice
 @pytest.mark.parametrize('use_notice', [True, False])
-def test_group_channels(use_notice):
+@pytest.mark.parametrize('nchan', [10, 30, 10000])
+def test_group_channels(use_notice, nchan):
     test_spec = test_custom_spec()
     if use_notice:
         emin, emax = 3.0 * u.keV, 5.0 * u.keV
         test_spec.notice_range(emin, emax)
 
-    group_channels(test_spec, 10)
+    group_channels(test_spec, nchan)
     blo, bhi, cts, cts_err = test_spec.binned_counts()
 
     notice  = test_spec.notice

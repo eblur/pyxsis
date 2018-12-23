@@ -20,7 +20,7 @@ class XBinSpectrum(XraySpectrum1D):
             XraySpectrum1D.__init__(self, temp.bin_lo, temp.bin_hi,
                                     temp.counts, temp.exposure, **kwargs)
         self.notice  = np.ones_like(self.counts, dtype=bool)
-        self.binning = np.zeros_like(self.counts)
+        self.binning = np.zeros_like(self.counts, dtype=int)
         self.bkg = None
 
     ##-- I wrote these properties for convenience
@@ -128,12 +128,6 @@ class XBinSpectrum(XraySpectrum1D):
         new_bin_hi = np.array([bin_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
         result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
 
-        # Accuracy checks
-        assert len(new_bin_lo) == (max(binning) - min(binning) + 1)
-        assert len(new_bin_hi) == (max(binning) - min(binning) + 1)
-        assert len(result) == (max(binning) - min(binning) + 1)
-        assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
-
         new_bin_lo *= self.bin_lo.unit
         new_bin_hi *= self.bin_lo.unit
         result *= u.ct
@@ -201,7 +195,7 @@ def group_channels(spectrum, n):
     assert n > 1, "n must be larger than 1"
 
     tot_chan = len(spectrum.binning)  # Total number of channels
-    counter, index = 0, 0
+    counter, index = 1, 0
     result = np.array([])
     while index < tot_chan:
         result = np.append(result, np.repeat(counter, n))
