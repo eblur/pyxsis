@@ -5,7 +5,7 @@ import astropy.units as u
 
 from astropy.modeling.powerlaws import PowerLaw1D
 
-from pyxsis.binspectrum import XBinSpectrum, group_channels
+from pyxsis.binspectrum import XBinSpectrum, group_channels, group_mincounts
 
 def test_init():
     test = XBinSpectrum([]*u.angstrom, []*u.angstrom,
@@ -63,7 +63,7 @@ def test_notice():
                              amax.to(bunit, equivalencies=u.spectral())))
 
 
-# Test binning with and without notice
+# Test binning by channels with and without notice
 @pytest.mark.parametrize('use_notice', [True, False])
 @pytest.mark.parametrize('nchan', [10, 30, 10000])
 def test_group_channels(use_notice, nchan):
@@ -73,6 +73,30 @@ def test_group_channels(use_notice, nchan):
         test_spec.notice_range(emin, emax)
 
     group_channels(test_spec, nchan)
+    blo, bhi, cts, cts_err = test_spec.binned_counts()
+
+    notice  = test_spec.notice
+    binning = test_spec.binning[notice]
+    counts  = test_spec.counts[notice].value
+    bin_lo  = test_spec.bin_lo[notice].value
+    bin_hi  = test_spec.bin_hi[notice].value
+
+    assert len(blo) == (max(binning) - min(binning) + 1)
+    assert len(bhi) == (max(binning) - min(binning) + 1)
+    assert len(cts) == (max(binning) - min(binning) + 1)
+    assert np.sum(cts.value) == np.sum(counts)  # Make sure no counts are lost
+    assert np.all(blo - bhi < 0.0)
+
+# Test binning by counts with and without notice
+@pytest.mark.parametrize('use_notice', [True, False])
+@pytest.mark.parametrize('mcounts', [1, 10, 30])
+def test_group_channels(use_notice, mcounts):
+    test_spec = test_custom_spec()
+    if use_notice:
+        emin, emax = 3.0 * u.keV, 5.0 * u.keV
+        test_spec.notice_range(emin, emax)
+
+    group_mincounts(test_spec, mcounts)
     blo, bhi, cts, cts_err = test_spec.binned_counts()
 
     notice  = test_spec.notice
