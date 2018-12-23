@@ -4,11 +4,6 @@ import astropy.units as u
 import numpy as np
 from . import binspectrum
 
-KEV      = ['kev', 'keV']
-ANGS     = ['angs', 'angstrom', 'Angstrom', 'angstroms', 'Angstroms']
-
-ALLOWED_UNITS = KEV + ANGS
-
 __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
@@ -90,7 +85,6 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
     ax.set_ylabel(ylabel)
 
 def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
-    assert xunit in ALLOWED_UNITS
 
     lo, hi, cts, cts_err = spectrum.bin_counts(unit=xunit)
     mid = 0.5 * (lo + hi)
