@@ -11,9 +11,8 @@ ALLOWED_UNITS = KEV + ANGS
 
 __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
-def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
+def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
                 bkgsub=True, usebackscal=True, **kwargs):
-    assert isinstance(spectrum, binspectrum.XBinSpectrum)
 
     lo, hi, cts, cts_err = spectrum.binned_counts(bkgsub=bkgsub, usebackscal=usebackscal)
 
@@ -21,20 +20,26 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
     xhi = hi.to(u.Unit(xunit), equivalencies=u.spectral())
     mid = 0.5 * (xlo + xhi)
 
+    if rate:
+        exp = spectrum.exposure
+    else:
+        exp = 1.0
+
     if perbin:
         dbin   = 1.0
     else:
         dbin   = np.abs(xhi - xlo)
 
-    y    = cts/dbin
-    yerr = cts_err/dbin
+    y    = cts/exp/dbin
+    yerr = cts_err/exp/dbin
 
     ax.errorbar(mid.value, y.value, yerr=yerr.value,
                 ls='', markersize=0, color='k', capsize=0, alpha=0.5)
-    ax.step(mid, y, where='post', **kwargs)
+    ax.step(mid, y, where='mid', **kwargs)
     ax.set_xlabel(mid.unit)
     ax.set_ylabel(y.unit)
     return
+
 
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
                 bkgsub=True, usebackscal=True, **kwargs):
@@ -80,7 +85,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
     # Now plot it
     ax.errorbar(mid, flux/dbin, yerr=f_err/dbin,
                 ls='', marker=None, color='k', capsize=0, alpha=0.5)
-    ax.step(lo, flux/dbin, where='post', **kwargs)
+    ax.step(lo, flux/dbin, where='mid', **kwargs)
     ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)
 
