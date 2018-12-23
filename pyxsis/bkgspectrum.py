@@ -4,6 +4,8 @@ from astropy.io import fits
 from astropy.units import si
 #import clarsach
 
+''' NOT YET TESTED '''
+
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS

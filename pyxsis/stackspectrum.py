@@ -2,6 +2,9 @@ import numpy as np
 #import clarsach
 from .binspectrum import Spectrum
 
+''' NOT YET TESTED '''
+
+
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS

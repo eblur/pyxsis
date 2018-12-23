@@ -4,7 +4,7 @@ import astropy.units as u
 import numpy as np
 from . import binspectrum
 
-__all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
+__all__ = ['plot_counts', 'plot_unfold']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
                 bkgsub=True, usebackscal=True, **kwargs):
@@ -87,7 +87,8 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
     ax.set_xlabel(x.unit.to_string(format='latex_inline'))
     ax.set_ylabel("phot {}".format(y.unit.to_string(format='latex_inline')))
 
-def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
+## Not yet tested
+'''def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
 
     lo, hi, cts, cts_err = spectrum.bin_counts(unit=xunit)
     mid = 0.5 * (lo + hi)
@@ -105,4 +106,4 @@ def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
 
     ax.plot(mid, mflux/dbin, **kwargs)
     ax.set_xlabel("%s" % xunit)
-    ax.set_ylabel(ylabel)
+    ax.set_ylabel(ylabel)'''
