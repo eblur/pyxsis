@@ -1,5 +1,6 @@
 ## Plotting functions
 
+import astropy.units as u
 import numpy as np
 from . import binspectrum
 
@@ -12,23 +13,27 @@ __all__ = ['plot_counts', 'plot_unfold', 'plot_model_flux']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, \
                 bkgsub=True, usebackscal=True, **kwargs):
+    assert isinstance(spectrum, binspectrum.XBinSpectrum)
 
-    assert isinstance(spectrum, binspectrum.Spectrum)
-    lo, hi, cts, cts_err = spectrum.bin_counts(xunit, bkgsub=bkgsub, usebackscal=usebackscal)
-    mid = 0.5 * (lo + hi)
+    lo, hi, cts, cts_err = spectrum.binned_counts(bkgsub=bkgsub, usebackscal=usebackscal)
+
+    xlo = lo.to(u.Unit(xunit), equivalencies=u.spectral())
+    xhi = hi.to(u.Unit(xunit), equivalencies=u.spectral())
+    mid = 0.5 * (xlo + xhi)
 
     if perbin:
         dbin   = 1.0
-        ylabel = 'Counts per bin'
     else:
-        dbin   = hi - lo
-        ylabel = 'Counts %s$^{-1}$' % xunit
+        dbin   = np.abs(xhi - xlo)
 
-    ax.errorbar(mid, cts/dbin, yerr=cts_err/dbin,
+    y    = cts/dbin
+    yerr = cts_err/dbin
+
+    ax.errorbar(mid.value, y.value, yerr=yerr.value,
                 ls='', markersize=0, color='k', capsize=0, alpha=0.5)
-    ax.step(lo, cts/dbin, where='post', **kwargs)
-    ax.set_xlabel("%s" % xunit)
-    ax.set_ylabel(ylabel)
+    ax.step(mid, y, where='post', **kwargs)
+    ax.set_xlabel(mid.unit)
+    ax.set_ylabel(y.unit)
     return
 
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \

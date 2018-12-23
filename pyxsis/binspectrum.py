@@ -111,7 +111,7 @@ class XBinSpectrum(XraySpectrum1D):
             new_error  = np.sqrt(cts_err[sl]**2 + bcts_err[sl]**2)
             return new_lo, new_hi, new_counts, new_error
         else:
-            return new_lo, new_hi, counts, cts_err
+            return bin_lo, bin_hi, counts, cts_err
 
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
@@ -131,7 +131,6 @@ class XBinSpectrum(XraySpectrum1D):
         # Accuracy checks
         assert len(new_bin_lo) == (max(binning) - min(binning) + 1)
         assert len(new_bin_hi) == (max(binning) - min(binning) + 1)
-        assert all(new_bin_lo[1:] == new_bin_hi[:-1])
         assert len(result) == (max(binning) - min(binning) + 1)
         assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
 
@@ -189,7 +188,7 @@ def group_channels(spectrum, n):
 
     Parameters
     ----------
-    spectrum : Spectrum
+    spectrum : pyxsis.XBinSpectrum
         Must contain `binning` attribute (ndarray)
 
     n : int
@@ -197,7 +196,7 @@ def group_channels(spectrum, n):
 
     Returns
     -------
-    Modifies Spectrum.binning, returns nothing
+    Modifies spectrum.binning
     """
     assert n > 1, "n must be larger than 1"
 
@@ -221,7 +220,7 @@ def group_mincounts(spectrum, mc):
 
     Parameters
     ----------
-    spectrum : Spectrum
+    spectrum : XBinSpectrum
         Must contain `binning` attribute (ndarray)
 
     mc : int
@@ -229,7 +228,7 @@ def group_mincounts(spectrum, mc):
 
     Returns
     -------
-    Modifies Spectrum.binning, returns nothing
+    Modifies spectrum.binning
     """
     assert mc > 0, "mc must be larger than 1"
 
@@ -238,7 +237,7 @@ def group_mincounts(spectrum, mc):
     result = []
     for i in range(tot_chan):
         result.append(counter)
-        tempcount += spectrum.counts[i]
+        tempcount += spectrum.counts[i].value
         if tempcount >= mc:
             counter += 1
             tempcount = 0
@@ -246,7 +245,7 @@ def group_mincounts(spectrum, mc):
 
     # Ensure that the last bin has at least ten counts
     nlast = result[-1]
-    last_bin_count = np.sum(spectrum.counts[result == nlast])
+    last_bin_count = np.sum(spectrum.counts[result == nlast].value)
     if last_bin_count < mc:
         result[result == nlast] = nlast-1
 
