@@ -1,8 +1,11 @@
+import pytest
+
 import numpy as np
 import astropy.units as u
+
 from astropy.modeling.powerlaws import PowerLaw1D
 
-from pyxsis.binspectrum import XBinSpectrum
+from pyxsis.binspectrum import XBinSpectrum, group_channels
 
 def test_init():
     test = XBinSpectrum([]*u.angstrom, []*u.angstrom,
@@ -34,6 +37,15 @@ def test_notice():
     assert np.all(test_notice_keV >= emin)
     assert np.all(test_notice_keV <= emax)
 
+    # Test that bin edges are within notice range
+    bunit = test_spec.bin_lo.unit
+    nlo   = test_spec.bin_lo[test_spec.notice]
+    nhi   = test_spec.bin_lo[test_spec.notice]
+    assert np.all(nlo >= min(emin.to(bunit, equivalencies=u.spectral()),
+                             emax.to(bunit, equivalencies=u.spectral())))
+    assert np.all(nhi <= max(emin.to(bunit, equivalencies=u.spectral()),
+                             emax.to(bunit, equivalencies=u.spectral())))
+
     # test that the noticed values conform to the intervals (Angstroms)
     amax = emin.to(u.angstrom, equivalencies=u.spectral())
     amin = emax.to(u.angstrom, equivalencies=u.spectral())
@@ -41,3 +53,35 @@ def test_notice():
     test_notice_angs = test_spec.spectral_axis[test_spec.notice].to(u.angstrom, equivalencies=u.spectral())
     assert np.all(test_notice_angs >= amin)
     assert np.all(test_notice_angs <= amax)
+
+    bunit = test_spec.bin_lo.unit
+    nlo   = test_spec.bin_lo[test_spec.notice]
+    nhi   = test_spec.bin_lo[test_spec.notice]
+    assert np.all(nlo >= min(amin.to(bunit, equivalencies=u.spectral()),
+                             amax.to(bunit, equivalencies=u.spectral())))
+    assert np.all(nhi <= max(amin.to(bunit, equivalencies=u.spectral()),
+                             amax.to(bunit, equivalencies=u.spectral())))
+
+
+# Test binning with and without notice
+@pytest.mark.parametrize('use_notice', [True, False])
+def test_group_channels(use_notice):
+    test_spec = test_custom_spec()
+    if use_notice:
+        emin, emax = 3.0 * u.keV, 5.0 * u.keV
+        test_spec.notice_range(emin, emax)
+
+    group_channels(test_spec, 10)
+    blo, bhi, cts, cts_err = test_spec.binned_counts()
+
+    notice  = test_spec.notice
+    binning = test_spec.binning[notice]
+    counts  = test_spec.counts[notice].value
+    bin_lo  = test_spec.bin_lo[notice].value
+    bin_hi  = test_spec.bin_hi[notice].value
+
+    assert len(blo) == (max(binning) - min(binning) + 1)
+    assert len(bhi) == (max(binning) - min(binning) + 1)
+    assert len(cts) == (max(binning) - min(binning) + 1)
+    assert np.sum(cts.value) == np.sum(counts)  # Make sure no counts are lost
+    assert np.all(blo - bhi < 0.0)
