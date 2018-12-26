@@ -3,8 +3,6 @@ import astropy.units as u
 from astropy.io import fits
 from specutils import XraySpectrum1D
 
-''' NOT YET TESTED '''
-
 KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS
