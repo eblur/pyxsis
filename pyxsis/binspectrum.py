@@ -156,16 +156,19 @@ class XBinSpectrum(XraySpectrum1D):
         """
         return self.bkg.binned_counts(self.notice, self.binning, use_backscale=use_backscale)
 
-    def assign_bkg(self, bkgspec):
+    def assign_bkg(self, bkgspec, **kwargs):
         """
         Assign a background spectrum.
 
         Parameters
         ----------
-        bkgspec : pyxsis.BkgSpectrum
+        bkgspec : str or pyxsis.XBkgSpectrum
         """
-        assert isinstance(bkgspec, XBkgSpectrum)
-        self.bkg = bkgspec
+        if isinstance(bkgspec, str):
+            self.bkg = XBkgSpectrum(from_file=bkgspec, **kwargs)
+        else:
+            assert isinstance(bkgspec, XBkgSpectrum)
+            self.bkg = bkgspec
 
 ## ----- Binning functions
 
