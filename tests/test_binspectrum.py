@@ -81,6 +81,9 @@ def test_group_channels(use_notice, nchan):
     bin_lo  = test_spec.bin_lo[notice].value
     bin_hi  = test_spec.bin_hi[notice].value
 
+    assert cts.unit == u.ct
+    assert cts_err.unit == u.ct
+
     assert len(blo) == (max(binning) - min(binning) + 1)
     assert len(bhi) == (max(binning) - min(binning) + 1)
     assert len(cts) == (max(binning) - min(binning) + 1)
@@ -104,6 +107,9 @@ def test_group_mincounts(use_notice, mcounts):
     counts  = test_spec.counts[notice].value
     bin_lo  = test_spec.bin_lo[notice].value
     bin_hi  = test_spec.bin_hi[notice].value
+
+    assert cts.unit == u.ct
+    assert cts_err.unit == u.ct
 
     assert len(blo) == (max(binning) - min(binning) + 1)
     assert len(bhi) == (max(binning) - min(binning) + 1)
