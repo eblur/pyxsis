@@ -103,9 +103,9 @@ class XBinSpectrum(XraySpectrum1D):
 
         if subtract_bkg and (self.bkg is not None):
             blo, bhi, bcts, bcts_err = self.binned_bkg(use_backscale=use_backscale)
-            new_counts = counts[sl] - bcts[sl]
-            new_error  = np.sqrt(cts_err[sl]**2 + bcts_err[sl]**2)
-            return new_lo, new_hi, new_counts, new_error
+            new_counts = counts - bcts
+            new_error  = np.sqrt(cts_err**2 + bcts_err**2)
+            return blo, bhi, new_counts, new_error
         else:
             return bin_lo, bin_hi, counts, cts_err
 

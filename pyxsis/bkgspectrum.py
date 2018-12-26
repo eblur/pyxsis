@@ -129,15 +129,15 @@ class XBkgSpectrum(XraySpectrum1D):
             bin_lo = self.bin_lo[notice]
             bin_hi = self.bin_hi[notice]
             result  = self.counts[notice] * backscal
-            result_err = np.sqrt(self.counts[notice]) * backscal  # propogated error
+            result_err = np.sqrt(self.counts[notice].value) * backscal * u.ct # propogated error
         else:
             assert len(notice) == len(binning)  # need to apply notice array to binning
             binning = binning[notice]
-            counts  = self.counts[notice]
-            ener_lo = self.bin_lo[notice]
-            ener_hi = self.bin_hi[notice]
+            counts  = self.counts[notice].value
+            ener_lo = self.bin_lo[notice].value
+            ener_hi = self.bin_hi[notice].value
 
-            bin_lo, bin_hi, result, result_err2 = [], [], [], []
+            bin_lo, bin_hi, result, result_err = [], [], [], []
             for n in np.arange(min(binning), max(binning)+1):
                 if scalar_backscal:
                     bb = backscal
@@ -148,9 +148,10 @@ class XBkgSpectrum(XraySpectrum1D):
                 result.append(np.sum(counts[binning == n] * bb))
                 result_err.append(np.sqrt(np.sum(counts[binning == n] * bb**2)))  # propogated error
 
-            bin_lo = np.array(bin_lo)
-            bin_hi = np.array(bin_hi)
-            result = np.array(result)
-            result_err = np.array(result_err)
+            bin_unit = self.bin_lo.unit
+            bin_lo = np.array(bin_lo) * bin_unit
+            bin_hi = np.array(bin_hi) * bin_unit
+            result = np.array(result) * u.ct
+            result_err = np.array(result_err) * u.ct
 
         return bin_lo, bin_hi, result, result_err

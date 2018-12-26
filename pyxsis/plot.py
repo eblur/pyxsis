@@ -7,9 +7,12 @@ from . import binspectrum
 __all__ = ['plot_counts', 'plot_unfold']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
-                subtract_bkg=True, use_backscale=True, **kwargs):
+                plot_bkg=False, subtract_bkg=True, use_backscale=True, **kwargs):
 
-    lo, hi, cts, cts_err = spectrum.binned_counts(subtract_bkg=subtract_bkg, use_backscale=use_backscale)
+    if plot_bkg:
+        lo, hi, cts, cts_err = spectrum.binned_bkg(use_backscale=use_backscale)
+    else:
+        lo, hi, cts, cts_err = spectrum.binned_counts(subtract_bkg=subtract_bkg, use_backscale=use_backscale)
 
     xlo = lo.to(u.Unit(xunit), equivalencies=u.spectral())
     xhi = hi.to(u.Unit(xunit), equivalencies=u.spectral())
