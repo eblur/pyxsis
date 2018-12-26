@@ -90,7 +90,7 @@ def test_group_channels(use_notice, nchan):
 # Test binning by counts with and without notice
 @pytest.mark.parametrize('use_notice', [True, False])
 @pytest.mark.parametrize('mcounts', [1, 10, 30])
-def test_group_channels(use_notice, mcounts):
+def test_group_mincounts(use_notice, mcounts):
     test_spec = test_custom_spec()
     if use_notice:
         emin, emax = 3.0 * u.keV, 5.0 * u.keV
