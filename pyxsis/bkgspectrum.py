@@ -1,8 +1,7 @@
-import os
 import numpy as np
+import astropy.units as u
 from astropy.io import fits
-from astropy.units import si
-#import clarsach
+from .binspectrum import XBinSpectrum
 
 ''' NOT YET TESTED '''
 
@@ -10,74 +9,89 @@ KEV  = ['kev', 'keV']
 ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
 ALLOWED_UNITS = KEV + ANGS
 
-ALLOWED_TELESCOPES = ['HETG','ACIS','other']
+ALLOWED_FORMATS = ['chandra_hetg','chandra_acis']
 
-__all__ = ['BkgSpectrum']
+__all__ = ['XBkgSpectrum']
 
-class BkgSpectrum(object):
+class XBkgSpectrum(XBinSpectrum):
     """
-    Class for reading in background spectra
+    Class for reading in background spectra. This is a subclass of XBinSpectrum.
+
+    Parameters
+    ----------
+    bin_lo, bin_hi, counts, exposure, **kwargs (see also `specutils.XraySpectrum1D`)
+
+    **To load from a file:**
+
+    XBkgSpectrum(from_file=, format=, colname=)
+
+    from_file : str
+        Name of FITS file for background spectrum
+
+    format : str
+        Format of FITS file (Default: 'chandra_hetg' uses the 'BACKGROUND_UP'
+        and 'BACKGROUND_DOWN' columns to read in the data)
+
+    colname : str
+        Name of FITS data column that contains the counts histogram of interest.
+        (Default: 'COUNTS')
+
+    Attributes
+    ----------
+    Inherits all attributes from XBinSpectrum
+
+    **Additional attributes**
+
+    backscale : numpy.ndarry or float
+        Value for scaling the background count rate to the associated source area. 
+        Defaults to 1.0
     """
-    def __init__(self, filename, telescope='HETG'):
-        if telescope == 'HETG':
-            self._read_HETG(filename)
+    def __init__(self, *args, from_file=None, format='chandra_hetg', colname='COUNTS', **kwargs):
+        if from_file is None:
+            super().__init__(*args, **kwargs)
+            self.backscale = 1.0
         else:
-            self._read_other(filename)
-
-        if self.bin_unit in ANGS:
-            self._setbins_to_keV()
-
-    @property
-    def bin_mid(self):
-        return 0.5 * (self.bin_lo + self.bin_hi)
+            if format == 'chandra_hetg':
+                bin_lo, bin_hi, cts, exp, bscal = self._read_HETG(from_file)
+                super().__init__(bin_lo, bin_hi, cts, exp, **kwargs)
+                self.backscale = bscal
+            else:
+                bin_lo, bin_hi, cts, exp, bscal = self._read_other(from_file, colname)
+                super().__init__(bin_lo, bin_hi, cts, exp, **kwargs)
+                self.backscale = bscal
 
     def _read_HETG(self, filename):
-        this_dir = os.path.dirname(os.path.abspath(filename))
         ff     = fits.open(filename)
         data   = ff[1].data
         hdr    = ff[1].header
-        self.hdr    = hdr
-        self.data   = data
-        self.counts = data['BACKGROUND_UP'] + data['BACKGROUND_DOWN']
-        self.bin_lo = data['BIN_LO']
-        self.bin_hi = data['BIN_HI']
-        self.bin_unit = data.columns['BIN_LO'].unit
+        bin_unit = u.Unit(data.columns['BIN_LO'].unit)
+        exposure = hdr['EXPOSURE'] * u.second
+        counts = (data['BACKGROUND_UP'] + data['BACKGROUND_DOWN']) * u.ct
+        bin_lo = data['BIN_LO'] * bin_unit
+        bin_hi = data['BIN_HI'] * bin_unit
         # area of srouce region / area of background region
-        self.backscal = hdr['BACKSCAL'] / (hdr['BACKSCUP'] + hdr['BACKSCDN'])
+        backscal = hdr['BACKSCAL'] / (hdr['BACKSCUP'] + hdr['BACKSCDN'])
         ff.close()
+        return bin_lo, bin_hi, counts, exposure, backscal
 
-    def _read_other(self, filename):
-        this_dir = os.path.dirname(os.path.abspath(filename))
+    def _read_other(self, filename, colname):
         ff     = fits.open(filename)
         data   = ff[1].data
         hdr    = ff[1].header
-        self.hdr    = hdr
-        self.data   = data
-        self.counts = data['COUNTS']
-        self.bin_lo = data['BIN_LO']
-        self.bin_hi = data['BIN_HI']
-        self.bin_unit = data.columns['BIN_LO'].unit
+        bin_unit = u.Unit(data.columns['BIN_LO'].unit)
+        exposure = hdr['EXPOSURE'] * u.second
+        counts = data[colname] * u.ct
+        bin_lo = data['BIN_LO'] * bin_unit
+        bin_hi = data['BIN_HI'] * bin_unit
         # area of background region
         try:
-            self.backscal = 1.0 / hdr['BACKSCAL']
+            backscal = 1.0 / hdr['BACKSCAL']
         except:
-            self.backscal = 1.0
+            backscal = 1.0
         ff.close()
+        return bin_lo, bin_hi, counts, exposure, backscal
 
-    def _setbins_to_keV(self):
-        assert self.bin_unit in ANGS
-        new_bhi, sl = clarsach.respond._Angs_keV(self.bin_lo)
-        new_blo, sl = clarsach.respond._Angs_keV(self.bin_hi)
-        new_cts  = self.counts[sl]
-
-        # Now hard set everything
-        self.bin_lo = new_blo
-        self.bin_hi = new_bhi
-        self.counts = new_cts
-        self.bin_unit = si.keV
-        return
-
-    def bin_bkg(self, notice, binning, unit='keV', usebackscal=True):
+    def bin_bkg(self, notice, binning, use_backscale=True):
         """
         Returns a binned background spectrum
 
@@ -89,8 +103,8 @@ class BkgSpectrum(object):
         binning : ndarray
             Defines the binning for the spectrum (see Spectrum.binning)
 
-        usebackscal = True : bool
-            Set to true if you want the background to be scaled using the BkgSpectrum.backscal value
+        usebackscale : bool
+            If True, the background will be scaled using XBkgSpectrum.backscale
 
         Returns
         -------
@@ -98,11 +112,11 @@ class BkgSpectrum(object):
         """
         # Deal with backscal, which could be an array
         backscal, scalar_backscal = 1.0, True
-        if usebackscal:
-            if np.size(self.backscal) == 1:
-                backscal = self.backscal
+        if use_backscale:
+            if np.size(self.backscale) == 1:
+                backscal, scalar_backscal = self.backscale, True
             else:
-                backscal, scalar_backscal = self.backscal[notice], False
+                backscal, scalar_backscal = self.backscale[notice], False
 
         if all(binning == 0):
             bin_lo = self.bin_lo[notice]
@@ -125,11 +139,11 @@ class BkgSpectrum(object):
                 bin_lo.append(ener_lo[binning == n][0])
                 bin_hi.append(ener_hi[binning == n][-1])
                 result.append(np.sum(counts[binning == n] * bb))
-                result_err2.append(np.sum(counts[binning == n] * bb**2))  # propogated error
+                result_err.append(np.sqrt(np.sum(counts[binning == n] * bb**2)))  # propogated error
 
             bin_lo = np.array(bin_lo)
             bin_hi = np.array(bin_hi)
             result = np.array(result)
-            result_err = np.sqrt(np.array(result_err2))
+            result_err = np.array(result_err)
 
         return bin_lo, bin_hi, result, result_err
