@@ -1,7 +1,7 @@
 import numpy as np
 import astropy.units as u
 from astropy.io import fits
-from .binspectrum import XBinSpectrum
+from specutils import XraySpectrum1D
 
 ''' NOT YET TESTED '''
 
@@ -13,9 +13,9 @@ ALLOWED_FORMATS = ['chandra_hetg','chandra_acis']
 
 __all__ = ['XBkgSpectrum']
 
-class XBkgSpectrum(XBinSpectrum):
+class XBkgSpectrum(XraySpectrum1D):
     """
-    Class for reading in background spectra. This is a subclass of XBinSpectrum.
+    Class for reading in background spectra. This is a subclass of specutils.XraySpectrum1D.
 
     Parameters
     ----------
@@ -38,12 +38,12 @@ class XBkgSpectrum(XBinSpectrum):
 
     Attributes
     ----------
-    Inherits all attributes from XBinSpectrum
+    Inherits all attributes from specutils.XraySpectrum1D
 
     **Additional attributes**
 
     backscale : numpy.ndarry or float
-        Value for scaling the background count rate to the associated source area. 
+        Value for scaling the background count rate to the associated source area.
         Defaults to 1.0
     """
     def __init__(self, *args, from_file=None, format='chandra_hetg', colname='COUNTS', **kwargs):
@@ -91,7 +91,7 @@ class XBkgSpectrum(XBinSpectrum):
         ff.close()
         return bin_lo, bin_hi, counts, exposure, backscal
 
-    def bin_bkg(self, notice, binning, use_backscale=True):
+    def binned_counts(self, notice=None, binning=None, use_backscale=True, **kwargs):
         """
         Returns a binned background spectrum
 
@@ -99,17 +99,24 @@ class XBkgSpectrum(XBinSpectrum):
         ----------
         notice : ndarray, dtype=bool
             Defines what regions of the spectrum to notice
+            (Default: None, uses all of the counts histogram.)
 
         binning : ndarray
-            Defines the binning for the spectrum (see Spectrum.binning)
+            Defines the binning for the spectrum, same method as XBinSpectrum.
+            (Default: None, does not group any of the bins)
 
-        usebackscale : bool
+        use_backscale : bool
             If True, the background will be scaled using XBkgSpectrum.backscale
 
         Returns
         -------
-        bin_lo, bin_hi, bkg_counts, bkg_counts_err : ndarrays
+        bin_lo, bin_hi, bkg_counts, bkg_counts_err : astropy.units.Quantity
         """
+        if notice is None:
+            notice = np.ones_like(self.counts, dtype=bool)
+        if binning is None:
+            binning = np.zeros_like(self.counts, dtype=int)
+
         # Deal with backscal, which could be an array
         backscal, scalar_backscal = 1.0, True
         if use_backscale:

@@ -7,9 +7,9 @@ from . import binspectrum
 __all__ = ['plot_counts', 'plot_unfold']
 
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
-                bkgsub=True, usebackscal=True, **kwargs):
+                subtract_bkg=True, use_backscale=True, **kwargs):
 
-    lo, hi, cts, cts_err = spectrum.binned_counts(bkgsub=bkgsub, usebackscal=usebackscal)
+    lo, hi, cts, cts_err = spectrum.binned_counts(subtract_bkg=subtract_bkg, use_backscale=use_backscale)
 
     xlo = lo.to(u.Unit(xunit), equivalencies=u.spectral())
     xhi = hi.to(u.Unit(xunit), equivalencies=u.spectral())
@@ -37,7 +37,7 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
 
 
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
-                bkgsub=True, usebackscal=True, **kwargs):
+                subtract_bkg=True, use_backscale=True, **kwargs):
 
     # Models will always be in keV bin units
     no_mod  = np.ones_like(spectrum.arf.specresp)  # a non-model of ones (integrated)
@@ -51,7 +51,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
         return np.array(result)
 
     # Get the binned counts
-    lo, hi, cts, cts_err = spectrum.binned_counts(bkgsub=bkgsub, usebackscal=usebackscal)
+    lo, hi, cts, cts_err = spectrum.binned_counts(subtract_bkg=subtract_bkg, use_backscale=use_backscale)
 
     xlo = lo.to(u.Unit(xunit), equivalencies=u.spectral())
     xhi = hi.to(u.Unit(xunit), equivalencies=u.spectral())
