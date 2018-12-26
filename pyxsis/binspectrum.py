@@ -162,12 +162,13 @@ class XBinSpectrum(XraySpectrum1D):
 
         Parameters
         ----------
-        bkgspec : str or pyxsis.XBkgSpectrum
+        bkgspec : str or anything
+            If a string, loads background from the specified FITS file. 
+            Otherwise, stores the input in the XBinSpectrum.bkg attribute
         """
         if isinstance(bkgspec, str):
             self.bkg = XBkgSpectrum(from_file=bkgspec, **kwargs)
         else:
-            assert isinstance(bkgspec, XBkgSpectrum)
             self.bkg = bkgspec
 
 ## ----- Binning functions
