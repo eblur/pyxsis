@@ -4,20 +4,16 @@ import astropy.units as u
 from specutils import XraySpectrum1D
 #from .bkgspectrum import BkgSpectrum
 
-KEV  = ['kev', 'keV']
-ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
-ALLOWED_UNITS = KEV + ANGS
-
-#__all__ = ['Spectrum','group_channels','group_mincounts']
+__all__ = ['XBinSpectrum','group_channels','group_mincounts']
 
 class XBinSpectrum(XraySpectrum1D):
     def __init__(self, *args, from_file=None, format='chandra_hetg', **kwargs):
         if from_file is None:
-            XraySpectrum1D.__init__(self, *args, **kwargs)
+            super().__init__(*args, **kwargs)
         else:
             # I don't know how to make this inherit properly
             temp = XraySpectrum1D.read(from_file, format=format) # , **kwargs)
-            XraySpectrum1D.__init__(self, temp.bin_lo, temp.bin_hi,
+            super().__init__(temp.bin_lo, temp.bin_hi,
                                     temp.counts, temp.exposure, **kwargs)
         self.notice  = np.ones_like(self.counts, dtype=bool)
         self.binning = np.zeros_like(self.counts, dtype=int)
