@@ -46,10 +46,10 @@ class XBkgSpectrum(XraySpectrum1D):
         Value for scaling the background count rate to the associated source area.
         Defaults to 1.0
     """
-    def __init__(self, *args, from_file=None, format='chandra_hetg', colname='COUNTS', **kwargs):
+    def __init__(self, *args, backscale=1.0, from_file=None, format='chandra_hetg', colname='COUNTS', **kwargs):
         if from_file is None:
             super().__init__(*args, **kwargs)
-            self.backscale = 1.0
+            self.backscale = backscale
         else:
             if format == 'chandra_hetg':
                 bin_lo, bin_hi, cts, exp, bscal = self._read_HETG(from_file)
