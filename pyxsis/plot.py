@@ -43,7 +43,8 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
                 subtract_bkg=True, use_backscale=True, **kwargs):
 
     # Models will always be in keV bin units
-    no_mod  = np.ones_like(spectrum.arf.specresp)  # a non-model of ones (integrated)
+    # a non-model of ones (integrated)
+    no_mod  = np.ones_like(spectrum.arf.eff_area)
     eff_tmp = spectrum.apply_response(no_mod)
 
     def _bin_exp(exp, binning):
