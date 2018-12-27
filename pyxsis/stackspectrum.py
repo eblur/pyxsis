@@ -19,10 +19,12 @@ def stack_spectra(speclist, rmf=None, sum_exposure=False):
         to the final result.
 
     sum_exposure : bool
-        If _True_, the exposure times from each spectrum will be summed and the
+
+        If *True*, the exposure times from each spectrum will be summed and the
         effective area will be computed with a time weighted average. Use this
         setting when combining spectra from different observations.
-        If _False_, the exposure time will not be summed, and the effective area
+
+        If *False*, the exposure time will not be summed, and the effective area
         will be computed by summing the ARFs.
 
     Returns
@@ -87,7 +89,7 @@ def stack_spectra(speclist, rmf=None, sum_exposure=False):
             assert all(a.e_high == ehigh0), "Grids on every arf need to match"
             assert (exp == exposure), \
                 "These spectra don't appear to be from the same observation." \
-                "Run stack_spectra with sum_exposure = True."
+                " Run stack_spectra with sum_exposure = True."
             specresp += a.eff_area
             fracexpo += a.fracexpo
 
