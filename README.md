@@ -1,4 +1,4 @@
-# pyxsis
+# pyXsis
 _Python X-ray Spectral Interpretation System_
 
 Toy python code for manipulating high resolution X-ray spectra
@@ -8,17 +8,29 @@ This python library owes it's inspiration to the [Interactive Spectral Interpret
 
 ## Install instructions
 
-First download my version of _clarsach_ from Github and install it:
+You must have [Astropy](http://www.astropy.org/) and [Specutils](https://specutils.readthedocs.io/en/latest/) installed.
+
+I have a pending pull request to add the `XraySpectrum1D` object to _specutils_.
+For now, you will need to install my development version of _specutils_ to run
+this version of _pyXsis_.
+
+After installing _Astropy_, go to you favorite folder for storing
+development code and run the following:
 
 ```
-git clone https://github.com/eblur/clarsach.git
-cd clarsach
-python setup.py install
+mkdir specutils-dev
+cd specutils-dev
+
+git clone https://github.com/eblur/specutils.git .
+python setup.py develop
+
+git fetch origin
+git checkout xrayspectrum_loaders
+
 cd ..
 ```
 
-Next, download the _pyxsis_ repository from Github and install it:
-
+Next download and install from the _pyXsis_ repository:
 ```
 git clone https://github.com/eblur/pyxsis.git
 cd pyxsis
@@ -28,18 +40,19 @@ python setup.py install
 ## Dependencies
 
 + Numpy Version 1.1 or later
-+ Astropy Version 2.0 or later
-+ [Clarsach](https://github.com/dhuppenkothen/clarsach) Version 0.0 or later
++ Astropy Version 3.0 or later
++ Specutils development version from eblur
+
 
 ## Quick start
 
 ```
 import pyxsis
-my_spectrum = pyxsis.Spectrum('my_Chandra_HETG_file.pha', telescope='HETG')
+my_spectrum = pyxsis.XBinSpectrum.load('my_Chandra_HETG_file.pha')
 
 import matplotlib.pyplot as plt
 ax = plt.subplot(111)
-pyxsis.plot_counts(ax, my_spectrum, xunit='kev')
+pyxsis.plot_counts(ax, my_spectrum, xunit='keV')
 ```
 
 ## Installing a development version of pyXsis
@@ -52,17 +65,24 @@ source activate pyxsis-dev
 conda install numpy scipy matplotlib astropy
 ```
 
-Go to the folder where you would like to keep your libraries. Then install [Clarsach](https://github.com/dhuppenkothen/clarsach).
+Go to the folder where you would like to keep your libraries. Then re-install specutils, as above.
+
 ```
-git clone git@github.com:eblur/clarsach.git
-cd clarsach
-python setup.py install
+mkdir specutils-dev
+cd specutils-dev
+
+git clone https://github.com/eblur/specutils.git .
+python setup.py develop
+
+git fetch origin
+git checkout xrayspectrum_loaders
+
 cd ..
 ```
 
 Now clone and install pyXsis.
 ```
-git clone git@github.com:eblur/pyxsis.git
+git clone https://github.com/eblur/pyxsis.git
 cd pyxsis
 python setup.py develop
 ```
