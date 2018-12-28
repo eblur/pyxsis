@@ -44,21 +44,13 @@ class XBkgSpectrum(XraySpectrum1D):
         Value for scaling the background count rate to the associated source area.
         Defaults to 1.0
     """
-    def __init__(self, *args, backscale=1.0, from_file=None, format='chandra_hetg', colname='COUNTS', **kwargs):
-        if from_file is None:
-            super().__init__(*args, **kwargs)
-            self.backscale = backscale
-        else:
-            if format == 'chandra_hetg':
-                bin_lo, bin_hi, cts, exp, bscal = self._read_HETG(from_file)
-                super().__init__(bin_lo, bin_hi, cts, exp, **kwargs)
-                self.backscale = bscal
-            else:
-                bin_lo, bin_hi, cts, exp, bscal = self._read_other(from_file, colname)
-                super().__init__(bin_lo, bin_hi, cts, exp, **kwargs)
-                self.backscale = bscal
+    def __init__(self, *args, backscale=1.0):
+        super().__init__(*args)
+        self.filename  = None
+        self.backscale = backscale
 
-    def _read_HETG(self, filename):
+    @staticmethod
+    def load_HETG(filename):
         ff     = fits.open(filename)
         data   = ff[1].data
         hdr    = ff[1].header
@@ -70,9 +62,14 @@ class XBkgSpectrum(XraySpectrum1D):
         # area of srouce region / area of background region
         backscal = hdr['BACKSCAL'] / (hdr['BACKSCUP'] + hdr['BACKSCDN'])
         ff.close()
-        return bin_lo, bin_hi, counts, exposure, backscal
 
-    def _read_other(self, filename, colname):
+        result = XBkgSpectrum(bin_lo, bin_hi, counts, exposure)
+        result.filename = filename
+        result.backscale = backscal
+        return result
+
+    @staticmethod
+    def load(filename, colname='COUNTS'):
         ff     = fits.open(filename)
         data   = ff[1].data
         hdr    = ff[1].header
@@ -87,7 +84,12 @@ class XBkgSpectrum(XraySpectrum1D):
         except:
             backscal = 1.0
         ff.close()
-        return bin_lo, bin_hi, counts, exposure, backscal
+
+        result = XBkgSpectrum(bin_lo, bin_hi, counts, exposure)
+        result.backscale = backscal
+        result.filename = filename
+
+        return result
 
     def binned_counts(self, notice=None, binning=None, use_backscale=True, **kwargs):
         """

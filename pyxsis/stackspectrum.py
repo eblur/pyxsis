@@ -1,5 +1,5 @@
 import numpy as np
-from specutils import AreaResponse, ResponseMatrix
+from specutils import ARF, RMF
 from .binspectrum import XBinSpectrum
 
 __all__ = ['stack_spectra']
@@ -10,12 +10,15 @@ def stack_spectra(speclist, rmf=None, sum_exposure=False):
 
     Parameters
     ----------
-    speclist : list of specutils.xrayspectrum.XraySpectrum1D objects
-        A list of spectra to be stacked.
+    speclist : list
 
-    rmf : specutils.xrayspectrum.ResponseMatrix object or string (file name)
-        Response matrix to assign to the output spectrum.
-        If _None_, the RMF from the first spectrum in speclist will be assigned
+        A list of specutils.xrayspectrum.XraySpectrum1D objects to be stacked.
+
+    rmf : specutils.xrayspectrum.RMF object or string (file name)
+
+        Redistribution matrix to assign to the output spectrum.
+
+        If *None*, the RMF from the first spectrum in speclist will be assigned
         to the final result.
 
     sum_exposure : bool
@@ -104,7 +107,7 @@ def stack_spectra(speclist, rmf=None, sum_exposure=False):
         elo, ehigh, specresp, fracexpo, exposure = _summed_arf(speclist)
 
     # Create a new arf
-    new_arf = AreaResponse(elo, ehigh, specresp, fracexpo=fracexpo, exposure=exposure)
+    new_arf = ARF(elo, ehigh, specresp, fracexpo=fracexpo, exposure=exposure)
 
     if rmf is None:
         rmf = speclist[0].rmf

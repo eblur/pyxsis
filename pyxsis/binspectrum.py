@@ -7,17 +7,24 @@ from .bkgspectrum import XBkgSpectrum
 __all__ = ['XBinSpectrum','group_channels','group_mincounts']
 
 class XBinSpectrum(XraySpectrum1D):
-    def __init__(self, *args, from_file=None, format='chandra_hetg', **kwargs):
-        if from_file is None:
-            super().__init__(*args, **kwargs)
-        else:
-            # I don't know how to make this inherit properly
-            temp = XraySpectrum1D.read(from_file, format=format) # , **kwargs)
-            super().__init__(temp.bin_lo, temp.bin_hi,
-                                    temp.counts, temp.exposure, **kwargs)
-        self.notice  = np.ones_like(self.counts, dtype=bool)
-        self.binning = np.zeros_like(self.counts, dtype=int)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.notice  = np.ones_like(self.counts.value, dtype=bool)
+        self.binning = np.zeros_like(self.counts.value, dtype=int)
         self.bkg = None
+
+    @staticmethod
+    def load(filename, format='chandra_hetg', arf=None, rmf=None):
+        temp   = XraySpectrum1D.read(filename, format=format)
+        result = XBinSpectrum(temp.bin_lo, temp.bin_hi,
+                              temp.counts, temp.exposure)
+        if arf is not None:
+            result.assign_arf(arf)
+
+        if rmf is not None:
+            result.assign_rmf(rmf)
+
+        return result
 
     ##-- I wrote these properties for convenience
     @property
@@ -156,18 +163,34 @@ class XBinSpectrum(XraySpectrum1D):
         """
         return self.bkg.binned_counts(self.notice, self.binning, use_backscale=use_backscale)
 
-    def assign_bkg(self, bkgspec, **kwargs):
+    def assign_bkg(self, bkgspec, format='chandra_hetg', colname='COUNTS'):
         """
         Assign a background spectrum.
 
         Parameters
         ----------
-        bkgspec : str or anything
-            If a string, loads background from the specified FITS file. 
-            Otherwise, stores the input in the XBinSpectrum.bkg attribute
+        bkgspec : str or XBkgSpectrum
+
+            If a string, loads background from the specified FITS file.
+            Otherwise, stores the input in the XBinSpectrum.bkg attributes.
+
+        format : str
+
+            Specifies the format of the background file.
+
+            If 'chandra_hetg', runs `XBkgSpectrum.load_HETG`. Otherwise, runs
+            `XBkgSpectrum.load`
+
+        colname : str
+
+            Specifies the column name of the relevant counts histogram when
+            running `XBkgSpectrum.load`
         """
         if isinstance(bkgspec, str):
-            self.bkg = XBkgSpectrum(from_file=bkgspec, **kwargs)
+            if format == 'chandra_hetg':
+                self.bkg = XBkgSpectrum.load_HETG(bkgspec)
+            else:
+                self.bkg = XBkgSpectrum.load(bkgspec, colname=colname)
         else:
             self.bkg = bkgspec
 
