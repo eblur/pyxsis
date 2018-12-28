@@ -37,6 +37,19 @@ cd pyxsis
 python setup.py install
 ```
 
+### Testing the installation
+
+To run the test notebooks in _pyxsis/tests/notebooks_, you will need to download the test HETG data.
+
+First, download the tar ball from https://doi.org/10.5281/zenodo.2528474
+
+Next, copy the downloaded file to your _pyxsis_ folder and unpack the tar ball:
+```
+tar -xvf pyxsis_test_data.tar
+```
+
+You're now ready to run the notebooks!
+
 ## Dependencies
 
 + Numpy Version 1.1 or later
