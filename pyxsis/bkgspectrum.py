@@ -44,8 +44,8 @@ class XBkgSpectrum(XraySpectrum1D):
         Value for scaling the background count rate to the associated source area.
         Defaults to 1.0
     """
-    def __init__(self, *args, backscale=1.0):
-        super().__init__(*args)
+    def __init__(self, *args, backscale=1.0, **kwargs):
+        super().__init__(*args, **kwargs)
         self.filename  = None
         self.backscale = backscale
 
