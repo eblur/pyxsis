@@ -1,7 +1,7 @@
 import numpy as np
 import astropy.units as u
 from astropy.modeling.powerlaws import PowerLaw1D
-from pyxsis import XraySpectrum1D, ARF, RMF
+from pyxsis.xrayspectrum1d import XraySpectrum1D, ARF, RMF
 
 def test_create_from_arrays():
     # Test that XraySpectrum1D can be initialized

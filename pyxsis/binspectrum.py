@@ -1,7 +1,7 @@
 import numpy as np
 import astropy.units as u
 
-from specutils import XraySpectrum1D
+from .xrayspectrum1d import XraySpectrum1D
 from .bkgspectrum import XBkgSpectrum
 
 __all__ = ['XBinSpectrum','group_channels','group_mincounts']

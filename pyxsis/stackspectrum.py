@@ -1,5 +1,5 @@
 import numpy as np
-from specutils import ARF, RMF
+from .xrayspectrum1d import ARF, RMF
 from .binspectrum import XBinSpectrum
 
 __all__ = ['stack_spectra']
