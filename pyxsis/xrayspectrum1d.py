@@ -221,6 +221,7 @@ class RMF(object):
         # which contains the redistribution matrix and
         # anxillary information
         hdulist = fits.open(filename)
+        result.filename = filename
 
         # get all the extension names
         extnames = np.array([h.name for h in hdulist])
