@@ -1,1 +1,1 @@
-from chandra_hetg import load_chandra_hetg
+from .chandra_hetg import load_chandra_hetg

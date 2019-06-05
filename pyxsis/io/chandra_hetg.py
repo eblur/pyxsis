@@ -1,11 +1,12 @@
+import os
 from astropy.io import fits
 from astropy.units import Unit
 
-from .. import XraySpectrum1D
+from .. import XBinSpectrum
 
 __all__ = ['load_chandra_hetg']
 
-def load_chandra_hetg(file_name, arf=None, rmf=None):
+def load_chandra_hetg(filename, arf=None, rmf=None):
     """
     Load Chandra HETG spectral data from a file into a spectrum object.
 
@@ -25,8 +26,9 @@ def load_chandra_hetg(file_name, arf=None, rmf=None):
     data: XraySpectrum1D
         The spectrum that is represented by the data in this table.
     """
+    this_dir = os.path.dirname(os.path.abspath(filename))
 
-    with fits.open(file_name) as hdu:
+    with fits.open(filename) as hdu:
         header = hdu[0].header
         meta   = {'header': header}
         data   = hdu[1].data
@@ -38,5 +40,10 @@ def load_chandra_hetg(file_name, arf=None, rmf=None):
         counts   = data['COUNTS'] * Unit('ct')
         exposure = hdu[1].header['EXPOSURE'] * Unit('second')
 
-    return XraySpectrum1D(bin_lo, bin_hi, counts,
+        if arf is None:
+            arf = this_dir + "/" + hdu[1].header['ANCRFILE']
+        if rmf is None:
+            rmf = this_dir + "/" + hdu[1].header['RESPFILE']
+
+    return XBinSpectrum(bin_lo, bin_hi, counts,
                           exposure=exposure, arf=arf, rmf=rmf)
