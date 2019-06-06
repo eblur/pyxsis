@@ -8,29 +8,10 @@ This python library owes it's inspiration to the [Interactive Spectral Interpret
 
 ## Install instructions
 
+
 You must have [Astropy](http://www.astropy.org/) and [Specutils](https://specutils.readthedocs.io/en/latest/) installed.
 
-I have a pending pull request to add the `XraySpectrum1D` object to _specutils_.
-For now, you will need to install my development version of _specutils_ to run
-this version of _pyXsis_.
-
-After installing _Astropy_, go to you favorite folder for storing
-development code and run the following:
-
-```
-mkdir specutils-dev
-cd specutils-dev
-
-git clone https://github.com/eblur/specutils.git .
-python setup.py develop
-
-git fetch origin
-git checkout xrayspectrum_loaders
-
-cd ..
-```
-
-Next download and install from the _pyXsis_ repository:
+Download and install _pyXsis_ from the Github repository:
 ```
 git clone https://github.com/eblur/pyxsis.git
 cd pyxsis
@@ -53,15 +34,14 @@ You're now ready to run the notebooks!
 ## Dependencies
 
 + Numpy Version 1.1 or later
-+ Astropy Version 3.0 or later
-+ Specutils development version from eblur
-
++ Astropy Version 3.0.5
++ Specutils Version 0.5.2
 
 ## Quick start
 
 ```
 import pyxsis
-my_spectrum = pyxsis.XBinSpectrum.load('my_Chandra_HETG_file.pha')
+my_spectrum = pyxsis.io.load_chandra_hetg('my_Chandra_HETG_file.pha')
 
 import matplotlib.pyplot as plt
 ax = plt.subplot(111)
@@ -75,22 +55,7 @@ These instructions teach you how to create an Anaconda environment for pyXsis de
 ```
 conda create -n pyxsis-dev python=3
 source activate pyxsis-dev
-conda install numpy scipy matplotlib astropy
-```
-
-Go to the folder where you would like to keep your libraries. Then re-install specutils, as above.
-
-```
-mkdir specutils-dev
-cd specutils-dev
-
-git clone https://github.com/eblur/specutils.git .
-python setup.py develop
-
-git fetch origin
-git checkout xrayspectrum_loaders
-
-cd ..
+conda install numpy scipy matplotlib astropy specutils
 ```
 
 Now clone and install pyXsis.
