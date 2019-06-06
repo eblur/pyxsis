@@ -90,9 +90,12 @@ def stack_spectra(speclist, rmf=None, sum_exposure=False):
             a, exp = s.arf, _arf_exp(s)
             assert all(a.e_low == elow0), "Grids on every arf need to match"
             assert all(a.e_high == ehigh0), "Grids on every arf need to match"
-            assert (exp == exposure), \
-                "These spectra don't appear to be from the same observation." \
-                " Run stack_spectra with sum_exposure = True."
+            # < 1 second difference in arf exposure time noted within same HETG observation.
+            # Skip this check / warning. I'm hoping that the user knows what they are doing.
+            '''if exp != exposure:
+                print("Warning: different ARF exposure times noted." \
+                " Do you want to run stack_spectra with sum_exposure = True?")
+            '''
             specresp += a.eff_area
             fracexpo += a.fracexpo
 
