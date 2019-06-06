@@ -1,72 +1,120 @@
 import numpy as np
-import clarsach
-from .bkgspectrum import BkgSpectrum
+import astropy.units as u
 
-KEV  = ['kev', 'keV']
-ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
-ALLOWED_UNITS = KEV + ANGS
+from .xrayspectrum1d import XraySpectrum1D
+from .bkgspectrum import XBkgSpectrum
 
-__all__ = ['Spectrum','group_channels','group_mincounts']
+__all__ = ['XBinSpectrum','group_channels','group_mincounts']
 
-class Spectrum(clarsach.XSpectrum):
-    def __init__(self, filename, **kwargs):
-        clarsach.XSpectrum.__init__(self, filename, **kwargs)
-        if self.bin_unit in ANGS:
-            self._setbins_to_keV()  # Always keep binning in keV
-        self.notice  = np.ones_like(self.counts, dtype=bool)
-        self.binning = np.zeros_like(self.counts)
+class XBinSpectrum(XraySpectrum1D):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.notice  = np.ones_like(self.counts.value, dtype=bool)
+        self.binning = np.zeros_like(self.counts.value, dtype=int)
         self.bkg = None
 
-    def notice_values(self, bmin, bmax, unit='keV'):
-        assert unit in ALLOWED_UNITS
-        if unit in ANGS:
-            emin = clarsach.respond.CONST_HC / bmax
-            emax = clarsach.respond.CONST_HC / bmin
-        if unit in KEV:
-            emin, emax = bmin, bmax
+    @staticmethod
+    def load(filename, format='chandra_hetg', arf=None, rmf=None):
+        temp   = XraySpectrum1D.read(filename, format=format)
+        result = XBinSpectrum(temp.bin_lo, temp.bin_hi,
+                              temp.counts, temp.exposure)
+        if arf is not None:
+            result.assign_arf(arf)
 
-        # Make sure the user hasn't changed bin_units to angstrom
-        assert self.bin_unit in KEV
-        self.notice = (self.bin_lo >= emin) & (self.bin_hi < emax)
+        if rmf is not None:
+            result.assign_rmf(rmf)
+
+        return result
+
+    ##-- I wrote these properties for convenience
+    @property
+    def bmid_keV(self):
+        return self.spectral_axis.to(u.keV, equivalencies=u.spectral())
+
+    @property
+    def bmid_angs(self):
+        return self.spectral_axis.to(u.angstrom, equivalencies=u.spectral())
+
+    def notice_range(self, bmin, bmax):
+        """
+        Define edges for spectral regions to notice. Notices regions exclusively.
+
+        >>> XBinSpectrum.notice(1.0*u.keV, 3.0*u.keV)
+
+        will notice *only* the region between 1 and 3 keV.
+
+        Parameters
+        ----------
+        bmin : astropy.Quantity
+            Minimum value for the notice region
+
+        bmax : astropy.Quantity
+            Maxium value for the notice region
+
+        Returns
+        -------
+        Modifies the XraySpectrum1D.notice attribute.
+        """
+        bmin0 = bmin.to(self.bin_lo.unit, equivalencies=u.spectral())
+        bmax0 = bmax.to(self.bin_lo.unit, equivalencies=u.spectral())
+        imin  = (self.bin_lo >= min(bmin0, bmax0))
+        imax  = (self.bin_hi <= max(bmin0, bmax0))
+        self.notice  = (imin & imax)
 
     def notice_all(self):
-        # Resets the notice attribute
+        """
+        Resets the notice attribute to notice the entire range.
+        """
         self.notice = np.ones_like(self.counts, dtype=bool)
 
     def reset_binning(self):
-        # Resets the binning attribute
+        """
+        Resets the binning attribute
+        """
         self.binning = np.zeros_like(self.counts)
 
-    def bin_counts(self, unit='keV', bkgsub=True, usebackscal=True):
-        # It's assumed that the spectrum is stored in keV bin units
-        assert self.bin_unit in KEV
+    def binned_counts(self, subtract_bkg=False, use_backscale=True):
+        """
+        Returns the binned counts histogram from the noticed spectral region.
 
-        # Returns lo, hi, mid, counts
-        # self.binning is set to all zeros if there is no binning defined
+        Parameters
+        ----------
+        subtract_bkg : bool
+            If True, supply the background subtracted region spectrum
+            (only if a background spectrum is supplied)
+
+        use_backscale : bool
+            If True, scales the background by the backscal value
+
+        Returns
+        -------
+        bin_lo : astropy.Quantity
+            Lower edges for the new bins
+
+        bin_hi : astropy.Quantity
+            Higher edges for the new bins
+
+        counts : astropy.Quantity
+            Counts for the new bins
+
+        cts_err : astropy.Quantity
+            Error on the new bins
+        """
         if all(self.binning == 0.0):
             counts  = self.counts[self.notice]
-            ener_lo = self.bin_lo[self.notice]
-            ener_hi = self.bin_hi[self.notice]
-            cts_err = np.sqrt(counts)
+            bin_lo = self.bin_lo[self.notice]
+            bin_hi = self.bin_hi[self.notice]
+            cts_err = np.sqrt(counts.value) * u.ct
         else:
-            ener_lo, ener_hi, counts, cts_err = self._parse_binning()
+            bin_lo, bin_hi, counts, cts_err = self._parse_binning()
 
-        # Figure out how counts should be arranged
-        if unit in KEV:
-            sl = slice(None, None, 1)
-            new_lo, new_hi = ener_lo, ener_hi
-        if unit in ANGS:
-            sl = slice(None, None, -1)
-            new_lo = clarsach.respond.CONST_HC/ener_hi[sl]
-            new_hi = clarsach.respond.CONST_HC/ener_lo[sl]
-
-        if bkgsub and (self.bkg is not None):
-            blo, bhi, bcts, bcts_err = self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
-            new_counts = counts[sl] - bcts[sl]
-            new_error  = np.sqrt(cts_err[sl]**2 + bcts_err[sl]**2)
-            return new_lo, new_hi, new_counts, new_error
+        if subtract_bkg and (self.bkg is not None):
+            blo, bhi, bcts, bcts_err = self.binned_bkg(use_backscale=use_backscale)
+            new_counts = counts - bcts
+            new_error  = np.sqrt(cts_err**2 + bcts_err**2)
+            return blo, bhi, new_counts, new_error
         else:
-            return new_lo, new_hi, counts[sl], np.sqrt(counts[sl])
+            return bin_lo, bin_hi, counts, cts_err
 
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
@@ -75,34 +123,76 @@ class Spectrum(clarsach.XSpectrum):
 
         # Use noticed regions only
         binning = self.binning[self.notice]
-        counts  = self.counts[self.notice]
-        ener_lo = self.bin_lo[self.notice]
-        ener_hi = self.bin_hi[self.notice]
+        counts  = self.counts[self.notice].value
+        bin_lo  = self.bin_lo[self.notice].value
+        bin_hi  = self.bin_hi[self.notice].value
 
-        bin_lo = np.array([ener_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)])
-        bin_hi = np.array([ener_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
+        new_bin_lo = np.array([bin_lo[binning == n][0] for n in np.arange(min(binning), max(binning)+1)])
+        new_bin_hi = np.array([bin_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
         result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
 
-        # Unit tests
-        assert len(bin_lo) == (max(binning) - min(binning) + 1)
-        assert len(bin_hi) == (max(binning) - min(binning) + 1)
-        assert all(bin_lo < bin_hi)
-        assert all(bin_lo[1:] == bin_hi[:-1])
-        assert len(result) == (max(binning) - min(binning) + 1)
-        assert np.sum(result) == np.sum(counts)  # Make sure no counts are lost
+        new_bin_lo *= self.bin_lo.unit
+        new_bin_hi *= self.bin_lo.unit
+        result *= u.ct
+        result_err = np.sqrt(result.value) * u.ct
 
-        return bin_lo, bin_hi, result, np.sqrt(result)
+        return new_bin_lo, new_bin_hi, result, result_err
 
-    def bin_bkg(self, usebackscal=True):
-        # Shortcut function for returning background
-        return self.bkg.bin_bkg(self.notice, self.binning, usebackscal=usebackscal)
+    def binned_bkg(self, use_backscale=True):
+        """
+        Return the background spectrum using the same spectral binning.
 
-    def assign_bkg(self, bkgspec):
-        assert isinstance(bkgspec, BkgSpectrum)
-        assert all(self.bin_lo == bkgspec.bin_lo), "Grids need to be the same"
-        assert all(self.bin_hi == bkgspec.bin_hi), "Grids need to be the same"
-        assert self.bin_unit == bkgspec.bin_unit, "Bin units need to be the same"
-        self.bkg = bkgspec
+        Parameters
+        ----------
+        use_backscale : bool
+            If True, returns the background scaled by the backscal value.
+
+        Returns
+        -------
+        bin_lo : astropy.Quantity
+            Lower edges for the new background bins
+
+        bin_hi : astropy.Quantity
+            Higher edges for the new background bins
+
+        counts : astropy.Quantity
+            Counts for the binned background histogram
+
+        cts_err : astropy.Quantity
+            Error on the new background bins
+        """
+        return self.bkg.binned_counts(self.notice, self.binning, use_backscale=use_backscale)
+
+    def assign_bkg(self, bkgspec, format='chandra_hetg', colname='COUNTS'):
+        """
+        Assign a background spectrum.
+
+        Parameters
+        ----------
+        bkgspec : str or XBkgSpectrum
+
+            If a string, loads background from the specified FITS file.
+            Otherwise, stores the input in the XBinSpectrum.bkg attributes.
+
+        format : str
+
+            Specifies the format of the background file.
+
+            If 'chandra_hetg', runs `XBkgSpectrum.load_HETG`. Otherwise, runs
+            `XBkgSpectrum.load`
+
+        colname : str
+
+            Specifies the column name of the relevant counts histogram when
+            running `XBkgSpectrum.load`
+        """
+        if isinstance(bkgspec, str):
+            if format == 'chandra_hetg':
+                self.bkg = XBkgSpectrum.load_HETG(bkgspec)
+            else:
+                self.bkg = XBkgSpectrum.load(bkgspec, colname=colname)
+        else:
+            self.bkg = bkgspec
 
 ## ----- Binning functions
 
@@ -112,7 +202,7 @@ def group_channels(spectrum, n):
 
     Parameters
     ----------
-    spectrum : Spectrum
+    spectrum : pyxsis.XBinSpectrum
         Must contain `binning` attribute (ndarray)
 
     n : int
@@ -120,12 +210,12 @@ def group_channels(spectrum, n):
 
     Returns
     -------
-    Modifies Spectrum.binning, returns nothing
+    Modifies spectrum.binning
     """
     assert n > 1, "n must be larger than 1"
 
     tot_chan = len(spectrum.binning)  # Total number of channels
-    counter, index = 0, 0
+    counter, index = 1, 0
     result = np.array([])
     while index < tot_chan:
         result = np.append(result, np.repeat(counter, n))
@@ -144,7 +234,7 @@ def group_mincounts(spectrum, mc):
 
     Parameters
     ----------
-    spectrum : Spectrum
+    spectrum : XBinSpectrum
         Must contain `binning` attribute (ndarray)
 
     mc : int
@@ -152,7 +242,7 @@ def group_mincounts(spectrum, mc):
 
     Returns
     -------
-    Modifies Spectrum.binning, returns nothing
+    Modifies spectrum.binning
     """
     assert mc > 0, "mc must be larger than 1"
 
@@ -161,7 +251,7 @@ def group_mincounts(spectrum, mc):
     result = []
     for i in range(tot_chan):
         result.append(counter)
-        tempcount += spectrum.counts[i]
+        tempcount += spectrum.counts[i].value
         if tempcount >= mc:
             counter += 1
             tempcount = 0
@@ -169,7 +259,7 @@ def group_mincounts(spectrum, mc):
 
     # Ensure that the last bin has at least ten counts
     nlast = result[-1]
-    last_bin_count = np.sum(spectrum.counts[result == nlast])
+    last_bin_count = np.sum(spectrum.counts[result == nlast].value)
     if last_bin_count < mc:
         result[result == nlast] = nlast-1
 

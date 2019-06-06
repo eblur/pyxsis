@@ -1,5 +1,8 @@
 
 from .plot import *
+from .xrayspectrum1d import *
 from .binspectrum import *
-from .stackspectrum import *
 from .bkgspectrum import *
+from .stackspectrum import *
+
+#from .xspectrum import XSpectrum
