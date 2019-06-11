@@ -117,11 +117,11 @@ class XBinSpectrum(XraySpectrum1D):
             cts_err = np.sqrt(cts_err**2 + bcts_err**2)
 
         if bin_unit is None:
-            return bin_lo, bin_hi, counts, counts_err
+            return bin_lo, bin_hi, counts, cts_err
         else:
             return bin_lo.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
                    bin_hi.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
-                   counts, counts_err
+                   counts, cts_err
 
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
