@@ -133,12 +133,6 @@ class XBinSpectrum(XraySpectrum1D):
         new_bin_hi = np.array([bin_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
         result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
 
-        # Unit tests
-        assert len(bin_lo) == (max(binning) - min(binning) + 1)
-        assert len(bin_hi) == (max(binning) - min(binning) + 1)
-        assert all(bin_lo < bin_hi)
-        assert all(bin_lo[1:] == bin_hi[:-1])
-        assert len(result) == (max(binning) - min(binning) + 1)
         # Make sure no counts are lost
         percent_diff = np.abs((np.sum(result) - np.sum(counts))/np.sum(counts))
         assert percent_diff < 1.e-5, print("Binned counts are off by {} \%".format(percent_diff/100.))
