@@ -133,7 +133,6 @@ class XBinSpectrum(XraySpectrum1D):
         new_bin_hi = np.array([bin_hi[binning == n][-1] for n in np.arange(min(binning), max(binning)+1)])
         result = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
 
-<<<<<<< HEAD
         # Unit tests
         assert len(bin_lo) == (max(binning) - min(binning) + 1)
         assert len(bin_hi) == (max(binning) - min(binning) + 1)
@@ -143,7 +142,7 @@ class XBinSpectrum(XraySpectrum1D):
         # Make sure no counts are lost
         percent_diff = np.abs((np.sum(result) - np.sum(counts))/np.sum(counts))
         assert percent_diff < 1.e-5, print("Binned counts are off by {} \%".format(percent_diff/100.))
-=======
+
         new_bin_lo *= self.bin_lo.unit
         new_bin_hi *= self.bin_lo.unit
         result *= u.ct
@@ -170,7 +169,6 @@ class XBinSpectrum(XraySpectrum1D):
 
         counts : astropy.Quantity
             Counts for the binned background histogram
->>>>>>> a84a3822064c13c610c25855f6f9579c5e558476
 
         cts_err : astropy.Quantity
             Error on the new background bins
