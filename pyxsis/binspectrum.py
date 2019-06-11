@@ -73,12 +73,15 @@ class XBinSpectrum(XraySpectrum1D):
         """
         self.binning = np.zeros_like(self.counts)
 
-    def binned_counts(self, subtract_bkg=False, use_backscale=True):
+    def binned_counts(self, bin_unit=None, subtract_bkg=False, use_backscale=True):
         """
         Returns the binned counts histogram from the noticed spectral region.
 
         Parameters
         ----------
+        bin_unit : Astropy unit (default:None)
+            If not None, returns the bin edges in the desired units
+
         subtract_bkg : bool
             If True, supply the background subtracted region spectrum
             (only if a background spectrum is supplied)
@@ -136,14 +139,22 @@ class XBinSpectrum(XraySpectrum1D):
         result *= u.ct
         result_err = np.sqrt(result.value) * u.ct
 
-        return new_bin_lo, new_bin_hi, result, result_err
+        if bin_unit is None:
+            return new_bin_lo, new_bin_hi, result, result_err
+        else:
+            return new_bin_lo.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   new_bin_hi.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   result, result_err
 
-    def binned_bkg(self, use_backscale=True):
+    def binned_bkg(self, bin_unit=None, use_backscale=True):
         """
         Return the background spectrum using the same spectral binning.
 
         Parameters
         ----------
+        bin_unit : Astropy unit (default:None)
+            If not None, returns the bin edges in the desired units
+
         use_backscale : bool
             If True, returns the background scaled by the backscal value.
 
@@ -161,7 +172,15 @@ class XBinSpectrum(XraySpectrum1D):
         cts_err : astropy.Quantity
             Error on the new background bins
         """
-        return self.bkg.binned_counts(self.notice, self.binning, use_backscale=use_backscale)
+        bin_lo, bin_hi, counts, cts_err = self.bkg.binned_counts(self.notice, self.binning, 
+                                                                 use_backscale=use_backscale)
+        
+        if bin_unit is None:
+            return bin_lo, bin_hi, counts, cts_err
+        else:
+            return bin_lo.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   bin_hi.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   counts, cts_err
 
     def assign_bkg(self, bkgspec, format='chandra_hetg', colname='COUNTS'):
         """
