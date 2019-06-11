@@ -1,88 +1,120 @@
 import numpy as np
-import clarsach
-from .binspectrum import Spectrum
-
-KEV  = ['kev', 'keV']
-ANGS = ['Angstroms','Angstrom','Angs','angstroms','angstrom','angs']
-ALLOWED_UNITS = KEV + ANGS
+from .xrayspectrum1d import ARF, RMF
+from .binspectrum import XBinSpectrum
 
 __all__ = ['stack_spectra']
 
-def stack_spectra(spec0, speclist):
+def stack_spectra(speclist, rmf=None, sum_exposure=False):
     """
     Stack a list of Spectrum objects
 
     Parameters
     ----------
-    spec0 : xpysis.binspectrum.Spectrum object
-        Template spectrum, for which the counts and ARF will be modified.
-        The RMF from this template spectrum will remain unchanged, and it is
-        assumed to be similar (if not identical) to the appropriate RMF for all
-        the spectra in `speclist`.
+    speclist : list
 
-    speclist : list of xpysis.binspectrum.Spectrum objects
-        A list of spectra to be stacked.
+        A list of specutils.xrayspectrum.XraySpectrum1D objects to be stacked.
 
-    Due to the fact that python uses pointers to assign variables, the user
-    needs to be careful about the inputs provided. Properties of `spec0` will
-    be overwritten. **Most importantly `spec0` should not be included in
-    `speclist`.** If the user wants `spec0` to contribute to the final stacked
-    spectrum, then `speclist` should include a **copy** of the `spec0` data
-    (read into a different variable name).
+    rmf : specutils.xrayspectrum.RMF object or string (file name)
+
+        Redistribution matrix to assign to the output spectrum.
+
+        If *None*, the RMF from the first spectrum in speclist will be assigned
+        to the final result.
+
+    sum_exposure : bool
+
+        If *True*, the exposure times from each spectrum will be summed and the
+        effective area will be computed with a time weighted average. Use this
+        setting when combining spectra from different observations.
+
+        If *False*, the exposure time will not be summed, and the effective area
+        will be computed by summing the ARFs.
 
     Returns
     -------
-    Does not return anything. Modifies the counts, exposure time, and ARF
-    properties of `spec0`
+    XBinSpectrum with the stacked counts histogram, with a modified ARF
+    and an RMF.
     """
-    assert isinstance(spec0, Spectrum)
-    assert isinstance(speclist, list), "Need to provide a list of Spectrum objects"
     assert len(speclist) > 1, "Need more than one spectrum to stack"
 
+    # method for stacking counts
     def _stack_counts(speclist):
         s0     = speclist[0]
-        counts = np.copy(s0.counts)
+        counts = np.copy(s0.counts) * s0.counts.unit
         for s in speclist[1:]:
             assert all(s.bin_lo == s0.bin_lo), "Grids on every spectrum need to match"
             assert all(s.bin_hi == s0.bin_hi), "Grids on every spectrum need to match"
-            assert s.bin_unit == s0.bin_unit, "Grids need to be in the same units"
             counts += s.counts
         return counts
 
+    # method for grabbing the exposure time
     def _arf_exp(spec):
-        result = 1.0
-        try:
-            result = spec.arf.data[1].header['EXPOSURE']
-        except:
-            result = spec.exposure
+        if spec.arf.exposure is None:
             print("Cannot find exposure keyword from ARF, using PHA file")
-        return result
+            return np.copy(spec.exposure) * spec.exposure.unit
+        else:
+            return np.copy(spec.arf.exposure) * spec.arf.exposure.unit
 
-    def _stack_arf(speclist):
-        # Do a time weighted average of the ARF response and fracexpo
-        a0       = speclist[0].arf
+    # method for calculating time averaged ARF
+    def _time_avg_arf(speclist):
         exposure = _arf_exp(speclist[0])
-        specresp = np.copy(a0.specresp) * exposure
-        fracexpo = np.copy(a0.fracexpo) * exposure
+        arf0     = speclist[0].arf
+        specresp = np.copy(arf0.eff_area) * arf0.eff_area.unit * exposure
+        fracexpo = np.copy(arf0.fracexpo) * exposure
+        elow0    = np.copy(arf0.e_low) * arf0.e_low.unit
+        ehigh0   = np.copy(arf0.e_high) * arf0.e_high.unit
 
         for s in speclist[1:]:
             a, exp = s.arf, _arf_exp(s)
-            assert all(a.e_low == a0.e_low), "Grids on every arf need to match"
-            assert all(a.e_high == a0.e_high), "Grids on every arf need to match"
-            assert a.e_unit == a0.e_unit, "ARF grids need to be in the same units"
-            specresp += a.specresp * exp
+            assert all(a.e_low == elow0), "Grids on every arf need to match"
+            assert all(a.e_high == ehigh0), "Grids on every arf need to match"
+            specresp += a.eff_area * exp
             exposure += exp
-            fracexpo += a.fracexpo
+            fracexpo += a.fracexpo * exp
 
         specresp /= exposure
         fracexpo /= exposure
 
-        return specresp, fracexpo, exposure
+        return elow0, ehigh0, specresp, fracexpo, exposure
 
-    # Modify / overwrite old stuff
-    spec0.counts       = _stack_counts(speclist)
-    arfresp, fracexpo, exposure = _stack_arf(speclist)
-    spec0.arf.specresp = arfresp
-    spec0.arf.fracexpo = fracexpo
-    spec0.exposure     = exposure  # Taken from ARF if available
-    return
+    # method for calculating a summed arf
+    def _summed_arf(speclist):
+        exposure = _arf_exp(speclist[0])
+        arf0     = speclist[0].arf
+        specresp = np.copy(arf0.eff_area) * arf0.eff_area.unit
+        fracexpo = np.copy(arf0.fracexpo)
+        elow0    = np.copy(arf0.e_low) * arf0.e_low.unit
+        ehigh0   = np.copy(arf0.e_high) * arf0.e_high.unit
+
+        for s in speclist[1:]:
+            a, exp = s.arf, _arf_exp(s)
+            assert all(a.e_low == elow0), "Grids on every arf need to match"
+            assert all(a.e_high == ehigh0), "Grids on every arf need to match"
+            # < 1 second difference in arf exposure time noted within same HETG observation.
+            # Skip this check / warning. I'm hoping that the user knows what they are doing.
+            '''if exp != exposure:
+                print("Warning: different ARF exposure times noted." \
+                " Do you want to run stack_spectra with sum_exposure = True?")
+            '''
+            specresp += a.eff_area
+            fracexpo += a.fracexpo
+
+        fracexpo /= len(speclist)
+        return elow0, ehigh0, specresp, fracexpo, exposure
+
+    # Run all the internal functions
+    new_counts = _stack_counts(speclist)
+    if sum_exposure:
+        elo, ehigh, specresp, fracexpo, exposure = _time_avg_arf(speclist)
+    else:
+        elo, ehigh, specresp, fracexpo, exposure = _summed_arf(speclist)
+
+    # Create a new arf
+    new_arf = ARF(elo, ehigh, specresp, fracexpo=fracexpo, exposure=exposure)
+
+    if rmf is None:
+        rmf = speclist[0].rmf
+
+    # Return the new XBinSpectrum with new arf and rmf from first spectrum attached
+    return XBinSpectrum(speclist[0].bin_lo, speclist[0].bin_hi, new_counts, exposure,
+                           arf=new_arf, rmf=rmf)

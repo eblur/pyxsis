@@ -1,4 +1,4 @@
-# pyxsis
+# pyXsis
 _Python X-ray Spectral Interpretation System_
 
 Toy python code for manipulating high resolution X-ray spectra
@@ -8,31 +8,70 @@ This python library owes it's inspiration to the [Interactive Spectral Interpret
 
 ## Install instructions
 
-Download the repository from github
 
-```
-git clone https://github.com/eblur/xpysis.git
-```
+You must have [Astropy](http://www.astropy.org/) and [Specutils](https://specutils.readthedocs.io/en/latest/) installed.
 
-Move into the _xpysis_ directory and run _setup.py_
-
+Download and install _pyXsis_ from the Github repository:
 ```
+git clone https://github.com/eblur/pyxsis.git
+cd pyxsis
 python setup.py install
 ```
+
+### Testing the installation
+
+To run the test notebooks in _pyxsis/tests/notebooks_, you will need to download the test HETG data.
+
+First, download the tar ball from https://doi.org/10.5281/zenodo.2528474
+
+Next, copy the downloaded file to your _pyxsis_ folder and unpack the tar ball:
+```
+tar -xvf pyxsis_test_data.tar
+```
+
+You're now ready to run the notebooks!
 
 ## Dependencies
 
 + Numpy Version 1.1 or later
-+ Astropy Version 2.0 or later
-+ [Clarsach](https://github.com/dhuppenkothen/clarsach) Version 0.0 or later
++ Astropy Version 3.0.5
++ Specutils Version 0.5.2
 
 ## Quick start
 
 ```
 import pyxsis
-my_spectrum = pyxsis.Spectrum('my_Chandra_HETG_file.pha', telescope='HETG')
+my_spectrum = pyxsis.io.load_chandra_hetg('my_Chandra_HETG_file.pha')
 
 import matplotlib.pyplot as plt
 ax = plt.subplot(111)
-pyxsis.plot_counts(ax, my_spectrum, xunit='kev')
+pyxsis.plot_counts(ax, my_spectrum, xunit='keV')
+```
+
+## Installing a development version of pyXsis
+
+These instructions teach you how to create an Anaconda environment for pyXsis development.
+
+```
+conda create -n pyxsis-dev python=3
+source activate pyxsis-dev
+conda install numpy scipy matplotlib astropy specutils
+```
+
+Now clone and install pyXsis.
+```
+git clone https://github.com/eblur/pyxsis.git
+cd pyxsis
+python setup.py develop
+```
+
+If you use Jupyter notebooks, you can install the conda environment as a separate kernel, using the `ipykernel` package.
+```
+conda install ipykernel
+python -m ipykernel install --user --name pyxsis-dev --display-name "pyxsis-dev"
+```
+
+When you are done playing with pyXsis, you can exit out the conda environment with:
+```
+source deactivate
 ```

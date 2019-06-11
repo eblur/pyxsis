@@ -19,6 +19,6 @@ setup(name='pyxsis',
       license='LGPL-3.0',
       install_requires=[
         'numpy>=1.10',
-        'astropy>=2.0.0',
-        'clarsach>=0.0.0']
+        'astropy>=3.0.0',
+        'specutils>=0.5']
 )
