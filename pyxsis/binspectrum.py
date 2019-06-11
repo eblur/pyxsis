@@ -113,11 +113,15 @@ class XBinSpectrum(XraySpectrum1D):
 
         if subtract_bkg and (self.bkg is not None):
             blo, bhi, bcts, bcts_err = self.binned_bkg(use_backscale=use_backscale)
-            new_counts = counts - bcts
-            new_error  = np.sqrt(cts_err**2 + bcts_err**2)
-            return blo, bhi, new_counts, new_error
+            counts -= bcts
+            cts_err = np.sqrt(cts_err**2 + bcts_err**2)
+
+        if bin_unit is None:
+            return bin_lo, bin_hi, counts, counts_err
         else:
-            return bin_lo, bin_hi, counts, cts_err
+            return bin_lo.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   bin_hi.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   counts, counts_err
 
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
@@ -139,12 +143,7 @@ class XBinSpectrum(XraySpectrum1D):
         result *= u.ct
         result_err = np.sqrt(result.value) * u.ct
 
-        if bin_unit is None:
-            return new_bin_lo, new_bin_hi, result, result_err
-        else:
-            return new_bin_lo.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
-                   new_bin_hi.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
-                   result, result_err
+        return new_bin_lo, new_bin_hi, result, result_err
 
     def binned_bkg(self, bin_unit=None, use_backscale=True):
         """
