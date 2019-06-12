@@ -73,12 +73,15 @@ class XBinSpectrum(XraySpectrum1D):
         """
         self.binning = np.zeros_like(self.counts)
 
-    def binned_counts(self, subtract_bkg=False, use_backscale=True):
+    def binned_counts(self, bin_unit=None, subtract_bkg=False, use_backscale=True):
         """
         Returns the binned counts histogram from the noticed spectral region.
 
         Parameters
         ----------
+        bin_unit : Astropy unit (default:None)
+            If not None, returns the bin edges in the desired units
+
         subtract_bkg : bool
             If True, supply the background subtracted region spectrum
             (only if a background spectrum is supplied)
@@ -110,11 +113,15 @@ class XBinSpectrum(XraySpectrum1D):
 
         if subtract_bkg and (self.bkg is not None):
             blo, bhi, bcts, bcts_err = self.binned_bkg(use_backscale=use_backscale)
-            new_counts = counts - bcts
-            new_error  = np.sqrt(cts_err**2 + bcts_err**2)
-            return blo, bhi, new_counts, new_error
-        else:
+            counts -= bcts
+            cts_err = np.sqrt(cts_err**2 + bcts_err**2)
+
+        if bin_unit is None:
             return bin_lo, bin_hi, counts, cts_err
+        else:
+            return bin_lo.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   bin_hi.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   counts, cts_err
 
     def _parse_binning(self):
         ## Returns the number of counts in each bin for a binned spectrum
@@ -138,12 +145,15 @@ class XBinSpectrum(XraySpectrum1D):
 
         return new_bin_lo, new_bin_hi, result, result_err
 
-    def binned_bkg(self, use_backscale=True):
+    def binned_bkg(self, bin_unit=None, use_backscale=True):
         """
         Return the background spectrum using the same spectral binning.
 
         Parameters
         ----------
+        bin_unit : Astropy unit (default:None)
+            If not None, returns the bin edges in the desired units
+
         use_backscale : bool
             If True, returns the background scaled by the backscal value.
 
@@ -161,7 +171,15 @@ class XBinSpectrum(XraySpectrum1D):
         cts_err : astropy.Quantity
             Error on the new background bins
         """
-        return self.bkg.binned_counts(self.notice, self.binning, use_backscale=use_backscale)
+        bin_lo, bin_hi, counts, cts_err = self.bkg.binned_counts(self.notice, self.binning, 
+                                                                 use_backscale=use_backscale)
+        
+        if bin_unit is None:
+            return bin_lo, bin_hi, counts, cts_err
+        else:
+            return bin_lo.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   bin_hi.to(u.Unit(bin_unit), equivalencies=u.spectral()), \
+                   counts, cts_err
 
     def assign_bkg(self, bkgspec, format='chandra_hetg', colname='COUNTS'):
         """

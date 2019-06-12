@@ -10,13 +10,13 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
                 plot_bkg=False, subtract_bkg=True, use_backscale=True, **kwargs):
 
     if plot_bkg:
-        lo, hi, cts, cts_err = spectrum.binned_bkg(use_backscale=use_backscale)
+        lo, hi, cts, cts_err = spectrum.binned_bkg(bin_unit=xunit, 
+                                                   use_backscale=use_backscale)
     else:
-        lo, hi, cts, cts_err = spectrum.binned_counts(subtract_bkg=subtract_bkg, use_backscale=use_backscale)
-
-    xlo = lo.to(u.Unit(xunit), equivalencies=u.spectral())
-    xhi = hi.to(u.Unit(xunit), equivalencies=u.spectral())
-    mid = 0.5 * (xlo + xhi)
+        lo, hi, cts, cts_err = spectrum.binned_counts(bin_unit=xunit, 
+                                                      subtract_bkg=subtract_bkg, 
+                                                      use_backscale=use_backscale)
+    mid = 0.5 * (lo + hi)
 
     if rate:
         exp = spectrum.exposure
@@ -26,7 +26,7 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
     if perbin:
         dbin   = 1.0
     else:
-        dbin   = np.abs(xhi - xlo)
+        dbin   = np.abs(hi - lo)
 
     y    = cts/exp/dbin
     yerr = cts_err/exp/dbin
@@ -55,11 +55,11 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
         return np.array(result)
 
     # Get the binned counts
-    lo, hi, cts, cts_err = spectrum.binned_counts(subtract_bkg=subtract_bkg, use_backscale=use_backscale)
+    lo, hi, cts, cts_err = spectrum.binned_counts(bin_unit=xunit,
+                                                  subtract_bkg=subtract_bkg, 
+                                                  use_backscale=use_backscale)
 
-    xlo = lo.to(u.Unit(xunit), equivalencies=u.spectral())
-    xhi = hi.to(u.Unit(xunit), equivalencies=u.spectral())
-    mid = 0.5 * (xlo + xhi)
+    mid = 0.5 * (lo + hi)
 
     # Get the binned effective area
     if all(spectrum.binning == 0):
@@ -77,7 +77,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
     if perbin:
         dbin   = 1.0
     else:
-        dbin   = np.abs(xhi - xlo)[ii]
+        dbin   = np.abs(hi - lo)[ii]
 
     # plot values
     x = mid[ii]
