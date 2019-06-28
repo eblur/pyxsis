@@ -75,7 +75,7 @@ class XBinSpectrum(XraySpectrum1D):
         """
         self.binning = np.zeros_like(self.counts)
 
-    def binned_counts(self, bin_unit=None, error_type='Poisson',
+    def binned_counts(self, bin_unit=None, error_type='Gauss',
                       subtract_bkg=False, use_backscale=True):
         """
         Returns the binned counts histogram from the noticed spectral region.
@@ -85,8 +85,8 @@ class XBinSpectrum(XraySpectrum1D):
         bin_unit : Astropy unit (default:None)
             If not None, returns the bin edges in the desired units
 
-        error_type : string ['Gehrels' (default) or 'Poisson']
-            If 'Poisson', returns cts_err = sqrt(cts).
+        error_type : string ['Gehrels' (default) or 'Gauss']
+            If 'Gauss', returns cts_err = sqrt(cts).
             If 'Gehrels', returns cts_err = 1.0 + sqrt(cts + 0.75)
 
         subtract_bkg : bool
@@ -110,8 +110,7 @@ class XBinSpectrum(XraySpectrum1D):
         cts_err : astropy.Quantity
             Error on the new bins
         """
-        assert error_type in ['Poisson', 'Gehrels'], "Must choose between \
-                Poisson and Gehrels for error_type"
+        assert error_type in ['Gauss', 'Gehrels']
         if all(self.binning == 0.0):
             counts  = self.counts[self.notice]
             bin_lo = self.bin_lo[self.notice]
@@ -119,7 +118,7 @@ class XBinSpectrum(XraySpectrum1D):
         else:
             bin_lo, bin_hi, counts = self._parse_binning()
 
-        if error_type == 'Poisson':
+        if error_type == 'Gauss':
             cts_err = np.sqrt(counts.value) * u.ct
         if error_type == 'Gehrels':
             cts_err = (1.0 + np.sqrt(counts.value + 0.75)) * u.ct
