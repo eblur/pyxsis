@@ -6,3 +6,4 @@ from .bkgspectrum import *
 from . import models
 from . import io
 from .stackspectrum import *
+from . import io
