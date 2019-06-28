@@ -75,7 +75,7 @@ class XBinSpectrum(XraySpectrum1D):
         """
         self.binning = np.zeros_like(self.counts)
 
-    def binned_counts(self, bin_unit=None, error_type='Gehrels', 
+    def binned_counts(self, bin_unit=None, error_type='Poisson',
                       subtract_bkg=False, use_backscale=True):
         """
         Returns the binned counts histogram from the noticed spectral region.
