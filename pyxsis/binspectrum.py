@@ -4,16 +4,96 @@ import astropy.units as u
 from .xrayspectrum1d import XraySpectrum1D
 from .bkgspectrum import XBkgSpectrum
 
-__all__ = ['XBinSpectrum','group_channels','group_mincounts','bin_anything']
+__all__ = ['XBinSpectrum','group_channels','group_mincounts','bin_by']
 
 class XBinSpectrum(XraySpectrum1D):
+    """
+    XBinSpectrum is a subclass of XraySpectrum1D.
+
+    Attributes
+    ----------
+
+    *Inherited from XraySpectrum1D*
+
+    bin_lo : astropy.Quantity array
+        Describes the left side of bin edges
+
+    bin_hi : astropy.Quantity array
+        Describes the right side of bin edges
+
+    bin_mid : astropy.Quantity array
+        Describes the bin centers (degenerate with spectral_axis)
+
+    counts : astropy.Quantity array
+        Describes the counts histogram (degenerate with flux)
+
+    exposure : astropy.Quantity
+        Exposure time for the observation
+
+    arf : pyxsis.xrayspectrum1d.ARF
+        Describes the telescope effective area as a function of energy
+
+    rmf : pyxsis.xrayspectrum1d.RMF
+        2D description of the telescope instrumental response as a function of energy
+
+    spectral_axis : astropy.Quantity array
+        Inherited attribute of specutils.Spectrum1D that describes the bin centers
+
+    flux : astropy.Quantity array
+        Inherited attribute of specutils.Spectrum1D, describes the counts histogram
+
+    *Additional attributes*
+
+    notice : bool numpy.ndarray
+        Describes the spectrum bins to use in plotting and model fitting
+
+    binning : int numpy.ndarray
+        Provides bin index numbers for grouping the spectrum. (Default: all zeros)
+
+    fit_fun : abstract Model class (see pyxsis.models)
+
+    model : XBinSpectrum (default: None)
+        Describes a model calculated for this spectrum
+
+    bkg : XBinSpectrum (default: None)
+        Describes the background dataset for this spectrum
+
+    backscale : float (default: 1.0)
+        Mulitplication factor for scaling the background dataset to the foreground region size
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Inputs
+        ------
+        bin_lo : astropy.Quantity
+            The left edges for bin values
+
+        bin_hi : astropy.Quantity
+            The right edges for bin values
+
+        counts : astropy.Quantity
+            Counts histogram for the X-ray spectrum
+
+        exposure : astropy.Quantity
+            Exposure time for the dataset
+
+        arf : specutils.ARF or string, default None
+            Strings will be passed to ARF.__init__
+            All other input types are stored as arf attribute
+
+        rmf : specutils.RMF or string, default None
+            Strings will be passed to RMF.__init__
+            All other input types are stored as rmf attribute
+
+        rest_value : astropy.units.Quantity, default 0 Angstrom
+            See specutils.Spectrum1D rest_value input
+        """
         super().__init__(*args, **kwargs)
         self.notice  = np.ones_like(self.counts.value, dtype=bool)
         self.binning = np.zeros_like(self.counts.value, dtype=int)
         self.bkg = None
         self.model = None
-        self.model_counts = None
+        self.fit_fun = None
 
     @staticmethod
     def load(filename, format='chandra_hetg', arf=None, rmf=None):
