@@ -25,17 +25,20 @@ class XraySpectrum1D(Spectrum1D):
     bin_hi : astropy.Quantity
         The right edges for bin values
 
+    bin_mid : astropy.Quantity
+        Middle of bins
+
     counts : astropy.Quantity
         Counts histogram for the X-ray spectrum
 
     exposure : astropy.Quantity
         Exposure time for the dataset
 
-    arf : specutils.ARF or string, default None
+    arf : pyxsis.xrayspectrum1d.ARF or string, default None
         Strings will be passed to ARF.__init__
         All other input types are stored as arf attribute
 
-    rmf : specutils.RMF or string, default None
+    rmf : pyxsis.xrayspectrum1d.RMF or string, default None
         Strings will be passed to RMF.__init__
         All other input types are stored as rmf attribute
 
@@ -62,7 +65,7 @@ class XraySpectrum1D(Spectrum1D):
     def __init__(self, bin_lo, bin_hi, counts, exposure,
                  arf=None, rmf=None, **kwargs):
 
-        bin_mid = 0.5 * (bin_lo + bin_hi)
+        self.bin_mid = 0.5 * (bin_lo + bin_hi)
         Spectrum1D.__init__(self, spectral_axis=bin_mid, flux=counts, **kwargs)
 
         self.bin_lo = bin_lo
