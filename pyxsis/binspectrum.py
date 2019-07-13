@@ -94,6 +94,7 @@ class XBinSpectrum(XraySpectrum1D):
         self.bkg = None
         self.model = None
         self.fit_fun = None
+        self.backscale = 1.0
 
     @staticmethod
     def load(filename, format='chandra_hetg', arf=None, rmf=None):
