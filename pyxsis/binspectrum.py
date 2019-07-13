@@ -17,6 +17,20 @@ class XBinSpectrum(XraySpectrum1D):
 
     @staticmethod
     def load(filename, format='chandra_hetg', arf=None, rmf=None):
+        """
+        Load a XBinSpectrum object from a file
+
+        Inputs
+        ------
+        filename : string
+            Name of the file to use
+
+        format : string
+            Only supports 'chandra_hetg'
+
+        arf : string or pyxsis.xrayspectrum1d.ARF object (default:None)
+        rmf : string or pyxsis.xrayspectrum1d.RMF object (default:None)
+        """
         temp   = XraySpectrum1D.read(filename, format=format)
         result = XBinSpectrum(temp.bin_lo, temp.bin_hi,
                               temp.counts, temp.exposure)
@@ -31,13 +45,23 @@ class XBinSpectrum(XraySpectrum1D):
     ##-- I wrote these properties for convenience
     @property
     def bmid_keV(self):
-        return self.spectral_axis.to(u.keV, equivalencies=u.spectral())
+        """
+        Returns
+        -------
+        numpy.ndarray : Returns the ungrouped bin centers in units of keV
+        """
+        return self.spectral_axis.to(u.keV, equivalencies=u.spectral()).value
 
     @property
     def bmid_angs(self):
-        return self.spectral_axis.to(u.angstrom, equivalencies=u.spectral())
+        """
+        Returns
+        -------
+        numpy.ndarray : Returns the ungrouped bin centers in units of Angstrom
+        """
+        return self.spectral_axis.to(u.angstrom, equivalencies=u.spectral()).value
 
-    def notice_range(self, bmin, bmax):
+    def xnotice(self, bmin, bmax):
         """
         Define edges for spectral regions to notice. Notices regions exclusively.
 
@@ -85,12 +109,12 @@ class XBinSpectrum(XraySpectrum1D):
         bin_unit : Astropy unit (default:None)
             If not None, returns the bin edges in the desired units
 
-        error_type : string ['Gehrels' (default) or 'Gauss']
+        error_type : string ['Gehrels' or 'Gauss' (default)]
             If 'Gauss', returns cts_err = sqrt(cts).
             If 'Gehrels', returns cts_err = 1.0 + sqrt(cts + 0.75)
 
         subtract_bkg : bool
-            If True, supply the background subtracted region spectrum
+            If True, supply the background subtracted spectrum
             (only if a background spectrum is supplied)
 
         use_backscale : bool
@@ -316,7 +340,7 @@ def group_mincounts(spectrum, mc):
     spectrum.binning = result
     return
 
-def bin_anything(x, binning, notice=None):
+def bin_by(x, binning, notice=None):
     """
     Group anything according to a binning array
 
