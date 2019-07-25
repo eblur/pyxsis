@@ -44,8 +44,9 @@ class PowerLaw(Model):
         norm = self['norm']
         phoindex = self['phoindex']
         if phoindex == 1.0:
-            r = np.log(ener_hi) - np.log(ener_lo)
+            r = norm * (np.log(ener_hi) - np.log(ener_lo))
         else:
-            r = -norm * ener_hi**(-phoindex + 1.0) + \
-                norm * ener_lo**(-phoindex + 1.0)
+            r = norm / (1.0-phoindex) * \
+                ( ener_hi**(-phoindex + 1.0) - \
+                  ener_lo**(-phoindex + 1.0) )
         return r
