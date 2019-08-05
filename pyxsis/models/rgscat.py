@@ -6,7 +6,9 @@ from .model import Model
 ## rgscat.py -- Provide a Rayleigh-Gans + Drude approximation scattering
 ## model for high imaging resolution spectral observations (e.g. Chandra and XMM)
 
-class RGscat(Model):
+__all__ = ['RGScat']
+
+class RGScat(Model):
     def __init__(self, tau1=0.5, lims=[(0., 100.)], units=[''],
                  name='RGscat'):
         """
