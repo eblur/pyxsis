@@ -47,7 +47,7 @@ class Gaussian(Model):
         assert len(ener_lo) == len(ener_hi)
         # Computes flux spectrum [phot cm^-2 s^-1] for given energy grid
         # integral over the power law model
-        norm    = self['norm']
+        norm    = self['norm'] / (np.sqrt(2.0 * np.pi) * self['sigma'])
         ecenter = self['ecenter']
         sigma   = self['sigma']
         emid    = 0.5 * (ener_lo + ener_hi) * u.keV
