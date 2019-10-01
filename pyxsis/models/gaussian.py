@@ -51,5 +51,5 @@ class Gaussian(Model):
         ecenter = self['ecenter']
         sigma   = self['sigma']
         emid    = 0.5 * (ener_lo + ener_hi) * u.keV
-        de      = ener_hi - ener_lo
+        de      = (ener_hi - ener_lo) * u.keV
         return norm * np.exp( -0.5 * (emid - ecenter)**2 / sigma**2 ) * de # flux per bin
