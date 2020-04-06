@@ -6,15 +6,16 @@ from . import binspectrum
 
 __all__ = ['plot_counts', 'plot_unfold']
 
-def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
-                plot_bkg=False, subtract_bkg=True, use_backscale=True, **kwargs):
+def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False,
+                plot_bkg=False, subtract_bkg=True, use_backscale=True,
+                scale_factor=1.0, **kwargs):
 
     if plot_bkg:
-        lo, hi, cts, cts_err = spectrum.binned_bkg(bin_unit=xunit, 
+        lo, hi, cts, cts_err = spectrum.binned_bkg(bin_unit=xunit,
                                                    use_backscale=use_backscale)
     else:
-        lo, hi, cts, cts_err = spectrum.binned_counts(bin_unit=xunit, 
-                                                      subtract_bkg=subtract_bkg, 
+        lo, hi, cts, cts_err = spectrum.binned_counts(bin_unit=xunit,
+                                                      subtract_bkg=subtract_bkg,
                                                       use_backscale=use_backscale)
     mid = 0.5 * (lo + hi)
 
@@ -28,8 +29,8 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
     else:
         dbin   = np.abs(hi - lo)
 
-    y    = cts/exp/dbin
-    yerr = cts_err/exp/dbin
+    y    = cts/exp/dbin * scale_factor
+    yerr = cts_err/exp/dbin * scale_factor
 
     ax.errorbar(mid.value, y.value, yerr=yerr.value,
                 ls='', markersize=0, color='k', capsize=0, alpha=0.5)
@@ -39,8 +40,9 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False, \
     return
 
 
-def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
-                subtract_bkg=True, use_backscale=True, **kwargs):
+def plot_unfold(ax, spectrum, xunit='keV', perbin=False,
+                subtract_bkg=True, use_backscale=True,
+                scale_factor=1.0, **kwargs):
 
     # Models will always be in keV bin units
     # a non-model of ones (integrated)
@@ -56,7 +58,7 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
 
     # Get the binned counts
     lo, hi, cts, cts_err = spectrum.binned_counts(bin_unit=xunit,
-                                                  subtract_bkg=subtract_bkg, 
+                                                  subtract_bkg=subtract_bkg,
                                                   use_backscale=use_backscale)
 
     mid = 0.5 * (lo + hi)
@@ -81,8 +83,8 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
 
     # plot values
     x = mid[ii]
-    y = flux / dbin
-    yerr = ferr / dbin
+    y = flux / dbin * scale_factor
+    yerr = ferr / dbin * scale_factor
 
     # Now plot it
     ax.errorbar(x.value, y.value, yerr=yerr.value,
@@ -92,7 +94,8 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
     ax.set_ylabel("phot {}".format(y.unit.to_string(format='latex_inline')))
 
 ## Not yet tested
-'''def plot_model_flux(ax, spectrum, model, xunit='keV', perbin=False, **kwargs):
+'''def plot_model_flux(ax, spectrum, model, scale_factor=1.0,
+                       xunit='keV', perbin=False, **kwargs):
 
     lo, hi, cts, cts_err = spectrum.bin_counts(unit=xunit)
     mid = 0.5 * (lo + hi)
@@ -108,6 +111,6 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False, \
         dbin   = hi - lo
         ylabel = 'Flux [phot cm$^{-2}$ s$^{-1}$ %s$^{-1}$]' % xunit
 
-    ax.plot(mid, mflux/dbin, **kwargs)
+    ax.plot(mid, mflux/dbin * scale_factor, **kwargs)
     ax.set_xlabel("%s" % xunit)
     ax.set_ylabel(ylabel)'''

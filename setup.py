@@ -15,6 +15,7 @@ setup(name='pyxsis',
       author_email='lia@astro.wisc.edu',
       url='https://github.com/eblur/pyxsis',
       packages=find_packages(),
+      package_data={'pyxsis': ['models/tables/*']},
       license='LGPL-3.0',
       install_requires=[
         'numpy>=1.10',

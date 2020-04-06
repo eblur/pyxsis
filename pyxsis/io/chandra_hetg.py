@@ -42,10 +42,8 @@ def load_chandra_hetg(filename, arf=None, rmf=None):
 
         if arf is None:
             arf = this_dir + "/" + hdu[1].header['ANCRFILE']
-            print("using arf {}".format(arf))
         if rmf is None:
             rmf = this_dir + "/" + hdu[1].header['RESPFILE']
-            print("using rmf {}".format(rmf))
 
     return XBinSpectrum(bin_lo, bin_hi, counts,
                           exposure=exposure, arf=arf, rmf=rmf)

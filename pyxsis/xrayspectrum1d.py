@@ -90,6 +90,7 @@ class XraySpectrum1D(Spectrum1D):
         Modifies the XraySpectrum1D.arf attribute
         """
         if isinstance(arf_inp, str):
+            print("Assigning arf {}".format(arf_inp))
             self.arf = ARF.read(arf_inp, **kwargs)
         else:
             self.arf = arf_inp
@@ -108,6 +109,7 @@ class XraySpectrum1D(Spectrum1D):
         Modifies the XraySpectrum1D.rmf attribute
         """
         if isinstance(rmf_inp, str):
+            print("Assigning rmf {}".format(rmf_inp))
             self.rmf = RMF.read(rmf_inp)
         else:
             self.rmf = rmf_inp
