@@ -27,6 +27,15 @@ Guide
 
    install
 
+Basics
+======
+
+.. toctree::
+   :maxdepth: 2
+
+   spectrum
+   response
+	      
 Indices and tables
 ==================
 
