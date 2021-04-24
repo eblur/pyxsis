@@ -28,6 +28,12 @@ XBinSpectrum
 .. autoclass:: pyxsis.binspectrum.XBinSpectrum
     :members:
 
+XBkgSpectrum
+^^^^^^^^^^^^
+
+.. autoclass:: pyxsis.binspectrum.XBkgSpectrum
+    :members:
+       
 Binning Functions
 ^^^^^^^^^^^^^^^^^
 

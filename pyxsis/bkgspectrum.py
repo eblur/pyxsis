@@ -15,10 +15,6 @@ class XBkgSpectrum(XraySpectrum1D):
     """
     Class for reading in background spectra. This is a subclass of specutils.XraySpectrum1D.
 
-    Parameters
-    ----------
-    bin_lo, bin_hi, counts, exposure, **kwargs (see also `specutils.XraySpectrum1D`)
-
     **To load from a file:**
 
     XBkgSpectrum(from_file=, format=, colname=)
@@ -34,17 +30,18 @@ class XBkgSpectrum(XraySpectrum1D):
         Name of FITS data column that contains the counts histogram of interest.
         (Default: 'COUNTS')
 
-    Attributes
-    ----------
-    Inherits all attributes from specutils.XraySpectrum1D
+    **Attributes**    
 
-    **Additional attributes**
+    Inherits all attributes from specutils.XraySpectrum1D
 
     backscale : numpy.ndarry or float
         Value for scaling the background count rate to the associated source area.
         Defaults to 1.0
     """
     def __init__(self, *args, backscale=1.0, **kwargs):
+        """
+        Same init parameters as XraySpectrum1D
+        """
         super().__init__(*args, **kwargs)
         self.filename  = None
         self.backscale = backscale
