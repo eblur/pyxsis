@@ -20,6 +20,12 @@ Observatory. Thank you also to the entire Chandra HETG group at MIT
 for personal help throughout the years with interpreting high
 resolution X-ray spectra.
 
+This library also directly utilizes code from the `clarsach
+<https://github.com/dhuppenkothen/clarsach>`_ repo written by Daniela
+Huppenkothen, which reverse-engineered the response file treatment
+provided by the standard high energy software package, `XSPEC
+<https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_.
+
 Installation
 ^^^^^^^^^^^^
 
