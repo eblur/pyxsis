@@ -36,6 +36,7 @@ Package Basics
 
    spectrum
    response
+   io
    plotting
    examples
       
