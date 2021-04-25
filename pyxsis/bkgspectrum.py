@@ -90,10 +90,8 @@ class XBkgSpectrum(XraySpectrum1D):
 
     def binned_counts(self, notice=None, binning=None, use_backscale=True, **kwargs):
         """
-        Returns a binned background spectrum
+        **Inputs**
 
-        Parameters
-        ----------
         notice : ndarray, dtype=bool
             Defines what regions of the spectrum to notice
             (Default: None, uses all of the counts histogram.)
@@ -104,10 +102,10 @@ class XBkgSpectrum(XraySpectrum1D):
 
         use_backscale : bool
             If True, the background will be scaled using XBkgSpectrum.backscale
+        
+        **Returns** a binned background spectrum
 
-        Returns
-        -------
-        bin_lo, bin_hi, bkg_counts, bkg_counts_err : astropy.units.Quantity
+        (bin_lo, bin_hi, bkg_counts, bkg counts_err) : astropy Quantity arrays
         """
         if notice is None:
             notice = np.ones_like(self.counts, dtype=bool)

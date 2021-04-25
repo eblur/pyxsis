@@ -14,11 +14,13 @@ ANGS = ['angs', 'Angs', 'Angstrom', 'angstrom', 'Angstroms', 'angstroms', 'A', '
 ## http://cxc.cfa.harvard.edu/xrayschool/talks/intro_xray_analysis.pdf
 
 class XraySpectrum1D(Spectrum1D):
-    """
-    Spectrum properties specific to X-ray data
+    """Spectrum properties specific to X-ray data
 
-    Parameters
-    ----------
+    **Attributes**
+    
+    Inherits from specutils Spectrum1D object. The following inputs
+    are stored as additional attributes.
+
     bin_lo : astropy.Quantity
         The left edges for bin values
 
@@ -30,38 +32,43 @@ class XraySpectrum1D(Spectrum1D):
 
     exposure : astropy.Quantity
         Exposure time for the dataset
-
-    arf : specutils.ARF or string, default None
-        Strings will be passed to ARF.__init__
-        All other input types are stored as arf attribute
-
-    rmf : specutils.RMF or string, default None
-        Strings will be passed to RMF.__init__
-        All other input types are stored as rmf attribute
+    
+    arf : ARF object
+        Telescope response file describing the effective area as a function of photon energy.
+    
+    rmf : RMF object
+        Telescope response file, a 2D matrix, describing the detector signal (pulse heights) distribution as a function photon energy.
 
     rest_value : astropy.units.Quantity, default 0 Angstrom
         See Spectrum1D rest_value input
-
-    Attributes
-    ----------
-    Inherits from Spectrum1D object.
-    The following inputs are stored as additional attributes.
-
-    bin_lo
-
-    bin_hi
-
-    counts
-
-    exposure
-
-    arf
-
-    rmf
     """
     def __init__(self, bin_lo, bin_hi, counts, exposure,
                  arf=None, rmf=None, **kwargs):
+        """
+        **Inputs**
 
+        bin_lo : astropy.Quantity
+            The left edges for bin values
+        
+        bin_hi : astropy.Quantity
+            The right edges for bin values
+        
+        counts : astropy.Quantity
+            Counts histogram for the X-ray spectrum
+        
+        exposure : astropy.Quantity
+            Exposure time for the dataset
+
+        arf : ARF or string (default: None)
+            Strings will be passed to ARF.__init__
+            All other input types are stored as arf attribute
+
+        rmf : RMF or string, default None
+            Strings will be passed to RMF.__init__
+            All other input types are stored as rmf attribute
+
+        *kwargs* are passed to specutils Spectrum1D.__init__
+        """
         bin_mid = 0.5 * (bin_lo + bin_hi)
         Spectrum1D.__init__(self, spectral_axis=bin_mid, flux=counts, **kwargs)
 
@@ -80,13 +87,13 @@ class XraySpectrum1D(Spectrum1D):
         """
         Assign an auxiliary response file (ARF) object to the XraySpectrum1D object
 
-        Input
-        -----
+        **Inputs**
+        
         arf_inp : string
             File name for the area response file (FITS file)
 
-        Returns
-        -------
+        **Returns**
+
         Modifies the XraySpectrum1D.arf attribute
         """
         if isinstance(arf_inp, str):
@@ -99,13 +106,13 @@ class XraySpectrum1D(Spectrum1D):
         """
         Assign a redistribution matrix file (RMF) object to the XraySpectrum1D object
 
-        Input
-        -----
+        **Input**
+        
         rmf_inp : string
             File name for the response matrix file (FITS file)
 
-        Returns
-        -------
+        **Returns**
+        
         Modifies the XraySpectrum1D.rmf attribute
         """
         if isinstance(rmf_inp, str):
@@ -124,8 +131,8 @@ class XraySpectrum1D(Spectrum1D):
         The model flux spectrum *must* be created using the same units and
         bins as in the ARF (where the ARF exists)!
 
-        Parameters
-        ----------
+        **Inputs**
+        
         mflux : astropy.units.Quantity
             A list or array with the model flux values,
             typically with units of phot/s/cm^-2
@@ -138,8 +145,8 @@ class XraySpectrum1D(Spectrum1D):
             ARF), this keyword provides the functionality to override the
             default behaviour and manually set the exposure time to use.
 
-        Returns
-        -------
+        **Returns**
+        
         model_counts : numpy.ndarray
             The model spectrum in units of counts/bin
 
@@ -147,7 +154,6 @@ class XraySpectrum1D(Spectrum1D):
         If no RMF file exists, it will return the model flux after applying the ARF (with a warning)
         If no ARF and no RMF, it will return the model flux spectrum (with a warning)
         """
-
         if self.arf is not None:
             mrate  = self.arf.apply_arf(mflux, exposure=exposure) # ct/bin with no RMF applied
         else:
@@ -169,8 +175,8 @@ class RMF(object):
         """
         Redistribution Matrix File (RMF) for an X-ray spectrum.
 
-        Attributes
-        ----------
+        **Attributes**
+        
         filename : str
             Stores the filename used with RMF.read
 
@@ -269,13 +275,13 @@ class RMF(object):
         """
         Get the tlmin keyword for `F_CHAN`.
 
-        Parameters
-        ----------
+        **Inputs**
+        
         h : an astropy.io.fits.hdu.table.BinTableHDU object
             The extension containing the `F_CHAN` column
 
-        Returns
-        -------
+        **Returns**
+        
         tlmin : int
             The tlmin keyword
         """
@@ -365,13 +371,13 @@ class RMF(object):
         All of this is basically a big bookkeeping exercise in making
         sure to get the indices right.
 
-        Parameters
-        ----------
+        **Inputs**
+        
         model : numpy.ndarray
             The (model) spectrum to be folded
 
-        Returns
-        -------
+        **Returns**
+        
         counts : numpy.ndarray
             The (model) spectrum after folding, in
             counts/s/channel
@@ -436,8 +442,8 @@ class ARF(object):
         """
         Auxiliary Response File (ARF) for an X-ray spectrum.
 
-        Attributes
-        ----------
+        **Attributes**
+        
         filename : str
             Stores the filename used with ARF.read
 
@@ -478,8 +484,8 @@ class ARF(object):
         """
         Load an ARF object from FITS file.
 
-        Parameters
-        ----------
+        **Inputs**
+        
         filename : str
             Path to the FITS file
 
@@ -487,8 +493,8 @@ class ARF(object):
             FITS file block keyword, if the spectral response is stored
             under an extension other than "SPECRESP"
 
-        Returns
-        -------
+        **Returns**
+        
         The ARF object that is represented by the FITS file
         """
         # open the FITS file and extract the SPECRESP block
@@ -531,8 +537,8 @@ class ARF(object):
         about the detector. A such, applying the ARF is a simple
         multiplication with the input spectrum.
 
-        Parameters
-        ----------
+        **Parameters**
+        
         model : numpy.ndarray
             The model spectrum to which the arf will be applied
 
@@ -544,8 +550,8 @@ class ARF(object):
             default exposure by setting the `exposure` keyword to the correct
             value.
 
-        Returns
-        -------
+        **Returns**
+        
         s_arf : numpy.ndarray
             The (model) spectrum after folding, in
             counts/s/channel
