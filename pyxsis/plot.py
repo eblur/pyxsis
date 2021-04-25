@@ -9,7 +9,56 @@ __all__ = ['plot_counts', 'plot_unfold']
 def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False,
                 plot_bkg=False, subtract_bkg=True, use_backscale=True,
                 scale_factor=1.0, **kwargs):
+    """
+    Plots the counts histogram for a 1D X-ray spectrum.
 
+    ax : matplotlib AxesSubplot object
+        The figure axis on which to plot.
+
+    spectrum : pyxsis XBinSpectrum object
+        The binnable 1D spectrum object to plot.
+
+    xunit : string (default: 'keV')
+        Defines the unit type to be used on the x-axis. The options
+        are 'angs' and 'keV'.
+
+    perbin : bool (default: True)
+        If True, the plot y-axis will show the number of counts per
+        bin. If False, the plot y-axis will show the number of counts
+        per bin-width, depending on the xunit. For example, if
+        xunit='keV', then the y-axis units will be counts/keV.
+
+    rate : bool (default: False)
+        If True, the plot y-axis will show the number of counts per
+        second. If False, it will show the total number of counts.
+
+    plot_bkg : bool (default: False)
+        If True, the background spectrum assigned to the input
+        spectrum will be plotted instead of the primary source
+        spectrum.
+
+    subtract_bkg : bool (default: True)
+        If True, the background spectrum assigned to the input
+        spectrum will be subtracted before plotting. If False, no
+        background subtraction will be implemented.
+
+    use_backscale : bool (default: True)
+        If True, the background spectrum will be scaled by the
+        pyxsis.XBkgSpectrum.backscale attribute. This attribute
+        generally holds the ratio of the background extraction area to
+        the source extraction area. If False, the raw background
+        spectrum count rate will be used. This is helpful if you just
+        want to view the raw background spectrum.
+
+    scale_factor : float (default: 1.0)
+        A normalization value to apply to the entire spectrum to be
+        plotted. This option is provided solely for convenience, for
+        example, in comparing spectra to each other.
+
+    *kwargs* are passed to the main histrogram plotting function
+    (ax.step). This can be used to change the color, line widths, line
+    style, and more.
+    """
     if plot_bkg:
         lo, hi, cts, cts_err = spectrum.binned_bkg(bin_unit=xunit,
                                                    use_backscale=use_backscale)
@@ -43,7 +92,47 @@ def plot_counts(ax, spectrum, xunit='keV', perbin=True, rate=False,
 def plot_unfold(ax, spectrum, xunit='keV', perbin=False,
                 subtract_bkg=True, use_backscale=True,
                 scale_factor=1.0, **kwargs):
+    """
+    Plots the flux histogram for a 1D X-ray spectrum.
 
+    ax : matplotlib AxesSubplot object
+        The figure axis on which to plot.
+
+    spectrum : pyxsis XBinSpectrum object
+        The binnable 1D spectrum object to plot.
+
+    xunit : string (default: 'keV')
+        Defines the unit type to be used on the x-axis. The options
+        are 'angs' and 'keV'.
+
+    perbin : bool (default: False)
+        If True, the plot y-axis will show the number of counts per
+        bin. If False, the plot y-axis will show the number of counts
+        per bin-width, depending on the xunit. For example, if
+        xunit='keV', then the y-axis units will be counts/keV.
+
+    subtract_bkg : bool (default: True)
+        If True, the background spectrum assigned to the input
+        spectrum will be subtracted before plotting. If False, no
+        background subtraction will be implemented.
+
+    use_backscale : bool (default: True)
+        If True, the background spectrum will be scaled by the
+        pyxsis.XBkgSpectrum.backscale attribute. This attribute
+        generally holds the ratio of the background extraction area to
+        the source extraction area. If False, the raw background
+        spectrum count rate will be used. This is helpful if you just
+        want to view the raw background spectrum.
+
+    scale_factor : float (default: 1.0)
+        A normalization value to apply to the entire spectrum to be
+        plotted. This option is provided solely for convenience, for
+        example, in comparing spectra to each other.
+
+    *kwargs* are passed to the main histrogram plotting function
+    (ax.step). This can be used to change the color, line widths, line
+    style, and more.
+    """
     # Models will always be in keV bin units
     # a non-model of ones (integrated)
     no_mod  = np.ones_like(spectrum.arf.eff_area)

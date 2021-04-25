@@ -10,21 +10,20 @@ def load_chandra_hetg(filename, arf=None, rmf=None):
     """
     Load Chandra HETG spectral data from a file into a spectrum object.
 
-    Parameters
-    ----------
-    file_name: str
+    **Inputs**
+    
+    filename : str
         The path to the FITS file
 
-    arf : str OR ARF
+    arf : str -or- pyxsis.xrayspectrum1d.ARF
         Filename for the area response file (ARF) or a pre-loaded AreaResponse object
 
-    rmf : str OR RMF
+    rmf : str -or- pyxsis.xrayspectrum1d.RMF
         Filename for the response matrix file (RMF) or a pre-loaded ResponseMatrix object
 
-    Returns
-    -------
-    data: XraySpectrum1D
-        The spectrum that is represented by the data in this table.
+    **Returns**
+    
+    pyxsis XraySpectrum1D object representing the data in the input FITS file
     """
     this_dir = os.path.dirname(os.path.abspath(filename))
 

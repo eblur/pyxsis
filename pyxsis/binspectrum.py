@@ -8,6 +8,9 @@ __all__ = ['XBinSpectrum','group_channels','group_mincounts','bin_anything']
 
 class XBinSpectrum(XraySpectrum1D):
     def __init__(self, *args, **kwargs):
+        """
+        Same init parameters as XraySpectrum1D
+        """
         super().__init__(*args, **kwargs)
         self.notice  = np.ones_like(self.counts.value, dtype=bool)
         self.binning = np.zeros_like(self.counts.value, dtype=int)
@@ -45,16 +48,16 @@ class XBinSpectrum(XraySpectrum1D):
 
         will notice *only* the region between 1 and 3 keV.
 
-        Parameters
-        ----------
+        **Inputs**
+        
         bmin : astropy.Quantity
             Minimum value for the notice region
 
         bmax : astropy.Quantity
             Maxium value for the notice region
 
-        Returns
-        -------
+        **Returns**
+
         Modifies the XraySpectrum1D.notice attribute.
         """
         bmin0 = bmin.to(self.bin_lo.unit, equivalencies=u.spectral())
@@ -80,8 +83,8 @@ class XBinSpectrum(XraySpectrum1D):
         """
         Returns the binned counts histogram from the noticed spectral region.
 
-        Parameters
-        ----------
+        **Inputs**
+
         bin_unit : Astropy unit (default:None)
             If not None, returns the bin edges in the desired units
 
@@ -96,8 +99,8 @@ class XBinSpectrum(XraySpectrum1D):
         use_backscale : bool
             If True, scales the background by the backscal value
 
-        Returns
-        -------
+        **Returns**
+
         bin_lo : astropy.Quantity
             Lower edges for the new bins
 
@@ -164,16 +167,16 @@ class XBinSpectrum(XraySpectrum1D):
         """
         Return the background spectrum using the same spectral binning.
 
-        Parameters
-        ----------
+        **Inputs**
+
         bin_unit : Astropy unit (default:None)
             If not None, returns the bin edges in the desired units
 
         use_backscale : bool
             If True, returns the background scaled by the backscal value.
 
-        Returns
-        -------
+        **Returns**
+
         bin_lo : astropy.Quantity
             Lower edges for the new background bins
 
@@ -200,8 +203,8 @@ class XBinSpectrum(XraySpectrum1D):
         """
         Assign a background spectrum.
 
-        Parameters
-        ----------
+        **Inputs**
+        
         bkgspec : str or XBkgSpectrum
 
             If a string, loads background from the specified FITS file.
@@ -250,16 +253,16 @@ def group_channels(spectrum, n):
     """
     Group channels in a spectrum by a constant factor, n
 
-    Parameters
-    ----------
+    **Inputs**
+    
     spectrum : pyxsis.XBinSpectrum
         Must contain `binning` attribute (ndarray)
 
     n : int
         Integer factor for binning the spectrum channels
 
-    Returns
-    -------
+    **Returns**
+    
     Modifies spectrum.binning
     """
     assert n > 1, "n must be larger than 1"
@@ -282,16 +285,16 @@ def group_mincounts(spectrum, mc):
     """
     Group channels in a spectrum so that there is a minimum number of counts in each bin
 
-    Parameters
-    ----------
+    **Inputs**
+    
     spectrum : XBinSpectrum
         Must contain `binning` attribute (ndarray)
 
     mc : int
         Minimum number of counts per bin
 
-    Returns
-    -------
+    **Returns**
+    
     Modifies spectrum.binning
     """
     assert mc > 0, "mc must be larger than 1"
@@ -320,8 +323,8 @@ def bin_anything(x, binning, notice=None):
     """
     Group anything according to a binning array
 
-    Parameters
-    ----------
+    **Inputs**
+    
     x : np.array
         Array to bin
 
@@ -331,8 +334,8 @@ def bin_anything(x, binning, notice=None):
     notice : bool np.array (optional)
         Array values to notice
 
-    Returns
-    -------
+    **Returns**
+    
     A numpy array that holds the binned results
     """
     assert len(x) == len(binning)
