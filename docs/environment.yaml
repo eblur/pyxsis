@@ -9,3 +9,4 @@ dependencies:
   - matplotlib==3.3.4
   - astropy==4.2
   - specutils==1.2
+  - furo==2021.4.11b34

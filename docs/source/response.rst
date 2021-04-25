@@ -6,9 +6,6 @@ Interpreting X-ray spectra requires knowledge of the instrumental
 response. There are two essential types of response files. Pyxsis
 provides a class for handling each of them.
 
-.. contents:: :local:
-   :depth: 2
-
 Auxiliary Response File (ARF)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

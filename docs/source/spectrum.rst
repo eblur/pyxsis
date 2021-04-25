@@ -6,9 +6,6 @@ This package provides several 1D spectrum classes and funcitons to
 support common tasks used in visualizing and interpreting X-ray
 spectra.
 
-.. contents:: :local:
-   :depth: 2
-
 
 XraySpectrum1D
 ^^^^^^^^^^^^^^
