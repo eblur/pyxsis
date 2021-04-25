@@ -34,10 +34,10 @@ Package Basics
 .. toctree::
    :maxdepth: 2
 	      
-   spectrum
-   response
+   spectrum/index
+   response/index
    io
    plotting
-   examples
+   examples/index
 
 
