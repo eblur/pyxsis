@@ -5,9 +5,6 @@ Telescope Specific Loaders
 The `pyxsis.io` submodule provides helper functions for loading files
 that are specific to an X-ray observatory.
 
-.. contents:: :local:
-   :depth: 2
-
 
 Chandra X-ray Observatory
 ^^^^^^^^^^^^^^^^^^^^^^^^^

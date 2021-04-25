@@ -18,10 +18,6 @@ function. For example, to set up axes for a single plot window:
    ax = plt.subplot(111)
 
 
-.. contents:: :local:
-   :depth: 2
-
-
 Plot a counts histogram
 ^^^^^^^^^^^^^^^^^^^^^^^
 

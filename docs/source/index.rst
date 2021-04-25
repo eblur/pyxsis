@@ -20,29 +20,24 @@ Observatory. Thank you also to the entire Chandra HETG group at MIT
 for personal help throughout the years with interpreting high
 resolution X-ray spectra.
 
-Installation Guide
-^^^^^^^^^^^^^^^^^^^
+Installation
+^^^^^^^^^^^^
+
 .. toctree::
-   :maxdepth: 1
-
+   :maxdepth: 2
+	      
    install
-
 
 Package Basics
 ^^^^^^^^^^^^^^
 
 .. toctree::
    :maxdepth: 2
-
-   spectrum
-   response
+	      
+   spectrum/index
+   response/index
    io
    plotting
-   examples
-      
-Indices and tables
-==================
+   examples/index
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
