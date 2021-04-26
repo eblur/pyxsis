@@ -33,9 +33,10 @@ You're now ready to run the notebooks!
 
 ## Dependencies
 
-+ Numpy Version 1.1 or later
-+ Astropy Version 3.0.5
-+ Specutils Version 0.5.2
++ Numpy Version 1.19
++ Astropy Version 4.2
++ Specutils Version 1.2
++ Matplotlib Version 3.3.4
 
 ## Quick start
 
