@@ -1,21 +1,33 @@
 import astropy.units as u
 
 class Model(object):
+    """Superclass for handling X-ray spectral models
+    
+    **Inputs**
+    
+    par_keys : list of strings : Parameter names
+    
+    par_vals : list of floats : Initial parameter values
+    
+    par_lims : list of tuples : Lists of parameter limits
+    
+    par_units : list of strings : Unit string for each parameter
+    
+    name : string : A name describing the model
+    
+    **Attributes**
+    
+    name
+    
+    keys
+    
+    vals : dictionary of key-value pairs for model parameters
+    
+    lims : dictionary of key-tuple pairs for model paraemters
+    
+    units : dictionary of key-unit pairs for model parameters
+    """
     def __init__(self, par_keys, par_vals, par_lims, par_units, name='Model'):
-        """
-        Model superclass
-        ----------------
-        par_keys : list of strings
-            parameter names
-        par_vals : list of floats
-            initial parameter values
-        par_lims : list of tuples
-            list of parameter limits
-        par_units : list of strings
-            unit string for each parameter
-        name : string
-            name describing the model
-        """
         # Check that the parameter values fall within the limits
         # If they don't, return None
         for v,l in zip(par_vals, par_lims):
@@ -30,14 +42,13 @@ class Model(object):
 
     def _check_lims(self, val, lim):
         """
-        Parameters
-        ----------
-
+        **Inputs**
+        
         val : float
         lim : tuple (floats)
 
-        Returns
-        -------
+        **Returns**
+
         True if `val` is within the boundaries of `lim`
         """
         result = (val >= lim[0]) & (val <= lim[1])
@@ -45,14 +56,14 @@ class Model(object):
 
     def check_par_lims(self, new_par_dict):
         """
-        Parameters
-        ----------
+        **Inputs**
+        
         new_par_dict : dictionary
             Dictionary keys are the parameter names
             Dictionary values are test values for each parameter
 
-        Returns
-        -------
+        **Returns**
+
         True if all of the test parameter values are within the limits
         set by self.lims
         """
@@ -65,12 +76,12 @@ class Model(object):
 
     def __getitem__(self, key):
         """
-        Parameters
-        ----------
+        **Input**
+
         key : string
 
-        Returns
-        -------
+        **Returns**
+
         Parameter value matching `key` as an Astropy.units.Quantity
         """
         assert key in self.keys, print("{} not a valid parameter key".format(key))
@@ -78,14 +89,15 @@ class Model(object):
 
     def update(self, new_dict):
         """
-        Parameters
-        ----------
+        **Input**
+
         new_vals : dict
             Key-value pairs for parameters that you wish to update
 
         Updates the model parameter values (Model.par_vals)
+
         If the new value is beyond the model limits, that value is set
-            to the nearest limit.
+        to the nearest limit.
         """
         # Finds the nearest limit
         def find_nearest_lim(v, l):

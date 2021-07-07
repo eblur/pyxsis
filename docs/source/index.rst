@@ -44,6 +44,7 @@ Package Basics
    response/index
    io
    plotting
+   models/index
    examples/index
 
 
