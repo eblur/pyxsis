@@ -514,7 +514,8 @@ class ARF(object):
         e_low  = np.array(data.field("ENERG_LO")) * e_unit
         e_high = np.array(data.field("ENERG_HI")) * e_unit
 
-        area_unit = u.Unit(data.columns['SPECRESP'].unit) * u.ct # usually ct cm^2 / phot
+        # usually counts cm^2 / phot; but leave counts and photons unitless
+        area_unit = u.Unit(data.columns['SPECRESP'].unit)
         specresp  = np.array(data.field("SPECRESP")) * area_unit
 
         exposure = None
