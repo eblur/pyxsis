@@ -231,21 +231,20 @@ class XBinSpectrum(XraySpectrum1D):
             self.bkg = bkgspec
 
     def evaluate_model(self, model_flux):
-        model_w_arf = self.arf.apply_arf(model_flux)
-        model_w_rmf = self.rmf.apply_rmf(model_w_arf)
-        self.model_counts = model_w_rmf
+        unbinned_counts = self.apply_response(model_flux)
+        self.model_counts = unbinned_counts
+        return self.bin_model_counts()
 
-    def bin_model_counts(self, unit='keV'):
-        # Use noticed regions only
-        binning = self.binning[self.notice]
-        counts  = self.model_counts[self.notice]
-        result  = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
-        # Figure out how counts should be arranged
-        if unit in KEV:
-            sl = slice(None, None, 1)
-        if unit in ANGS:
-            sl = slice(None, None, -1)
-        return result[sl]
+    def bin_model_counts(self):
+        # If there is no binning, return only the noticed regions
+        if np.sum(self.binning) == 0:
+            return self.model_counts[self.notice]
+        # Otherwise, take binning into account
+        else:
+            binning = self.binning[self.notice]
+            counts  = self.model_counts[self.notice]
+            result  = np.array([np.sum(counts[binning == n]) for n in np.arange(min(binning), max(binning)+1)])
+        return result
 
 ## ----- Binning functions
 

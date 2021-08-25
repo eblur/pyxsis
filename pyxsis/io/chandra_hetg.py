@@ -36,7 +36,7 @@ def load_chandra_hetg(filename, arf=None, rmf=None):
         bin_lo   = data['BIN_LO'] * bin_unit
         bin_hi   = data['BIN_HI'] * bin_unit
 
-        counts   = data['COUNTS'] * Unit('ct')
+        counts   = data['COUNTS'] * Unit('count')
         exposure = hdu[1].header['EXPOSURE'] * Unit('second')
 
         if arf is None:
