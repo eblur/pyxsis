@@ -3,6 +3,8 @@ _Python X-ray Spectral Interpretation System_
 
 Toy python code for manipulating high resolution X-ray spectra. The documentation webpages are available here: https://pyxsis.readthedocs.io/en/latest/index.html 
 
+Click here for [presentation slides about pyXsis](https://drive.google.com/file/d/1i7_An_iPq2ZFTjv_dt399hDiCNxOZeNw/view?usp=sharing)
+
 **Acknowledgements:**
 
 This python library owes it's inspiration to the [Interactive Spectral Interpretation System](http://adsabs.harvard.edu/abs/2000ASPC..216..591H) written by J. Houck and J. Davis (creator of S-lang), as well as long-time users and contributors M. Nowak, J. Wilms, and the group at Remeis Observatory. Thank you also to the entire Chandra HETG group at MIT for personal help throughout the years with interpreting high resolution X-ray spectra.
