@@ -13,7 +13,7 @@ def load_xmm_rgs(filename, arf=None, rmf=None):
     Load XMM RGS spectral data from a file into a spectrum object.
 
     **Inputs**
-    
+
     filename : str
         The path to the FITS file
 
@@ -25,7 +25,7 @@ def load_xmm_rgs(filename, arf=None, rmf=None):
         Filename for the response matrix file (RMF) or a pre-loaded ResponseMatrix object
 
     **Returns**
-    
+
     pyxsis XraySpectrum1D object representing the data in the input FITS file
     """
     this_dir = os.path.dirname(os.path.abspath(filename))
@@ -49,5 +49,5 @@ def load_xmm_rgs(filename, arf=None, rmf=None):
         if rmf is None:
             rmf = this_dir + "/" + hdu[1].header['RESPFILE']
 
-    return XBinSpectrum(bin_lo, bin_hi, counts,
+    return XBinSpectrum(bin_lo, bin_hi, counts, areascal=data['AREASCAL'],
                           exposure=exposure, arf=arf, rmf=rmf)
