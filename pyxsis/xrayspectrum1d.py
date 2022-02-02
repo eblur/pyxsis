@@ -165,13 +165,16 @@ class XraySpectrum1D(Spectrum1D):
         If no ARF and no RMF, it will return the model flux spectrum (with a warning)
         """
         if self.arf is not None:
-            mrate  = self.arf.apply_arf(mflux, exposure=exposure) # ct/bin with no RMF applied
+            mrate  = self.arf.apply_arf(mflux, exposure=exposure)
         else:
-            mrate = mflux # assumes ct/bin is the input with no RMF applied
+            print("Warning: No ARF assigned. Assuming detector area is")
+            print("contained in response matrix with units of s * cm^2 ")
+            mrate = mflux * u.cm**2 * u.second
 
         if self.rmf is not None:
             result = self.rmf.apply_rmf(mrate.value)
         else:
+            print("Warning: No RMF assigned.")
             result = mrate
 
         return result * self.areascal
