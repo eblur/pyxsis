@@ -473,8 +473,8 @@ class ARF(object):
         fracexpo : float or numpy.ndarray
             Fractional exposure time for the spectrum
             (sometimes constant, sometimes dependent on spectral channel).
-            These values are stored for reference; generally, they are already
-            accounted for in the eff_area array.
+            These values are stored for reference; they are already
+            accounted for in the eff_area array for the HETG data, it seems.
 
         e_mid : Property that returns the middle of each energy bin
         """
@@ -482,7 +482,7 @@ class ARF(object):
         self.e_low    = e_low
         self.e_high   = e_high
         self.eff_area = eff_area
-        self.fracexpo = fracexpo # a feature of Chandra HETG RMFs
+        self.fracexpo = fracexpo # a feature of Chandra HETG ARFS
         self.exposure = exposure
 
     @property
@@ -571,6 +571,6 @@ class ARF(object):
                                                       "be of same size as the " \
                                                       "ARF array."
         if exposure is None:
-            return model * self.eff_area * self.exposure * self.fracexpo
+            return model * self.eff_area * self.exposure
         else:
             return model * self.eff_area * exposure
