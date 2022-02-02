@@ -17,7 +17,7 @@ class XraySpectrum1D(Spectrum1D):
     """Spectrum properties specific to X-ray data
 
     **Attributes**
-    
+
     Inherits from specutils Spectrum1D object. The following inputs
     are stored as additional attributes.
 
@@ -32,10 +32,14 @@ class XraySpectrum1D(Spectrum1D):
 
     exposure : astropy.Quantity
         Exposure time for the dataset
-    
+
+    areascal : numpy.ndarray
+        Scale factor for effective region size (or effective area).
+        A data column found in XMM spectra.
+
     arf : ARF object
         Telescope response file describing the effective area as a function of photon energy.
-    
+
     rmf : RMF object
         Telescope response file, a 2D matrix, describing the detector signal (pulse heights) distribution as a function photon energy.
 
@@ -43,21 +47,26 @@ class XraySpectrum1D(Spectrum1D):
         See Spectrum1D rest_value input
     """
     def __init__(self, bin_lo, bin_hi, counts, exposure,
-                 arf=None, rmf=None, **kwargs):
+                 areascal=1.0, arf=None, rmf=None, **kwargs):
         """
         **Inputs**
 
         bin_lo : astropy.Quantity
             The left edges for bin values
-        
+
         bin_hi : astropy.Quantity
             The right edges for bin values
-        
+
         counts : astropy.Quantity
             Counts histogram for the X-ray spectrum
-        
+
         exposure : astropy.Quantity
             Exposure time for the dataset
+
+        areascal : numpy.ndarray
+            Scale factor for effective region size (or effective area). A data
+            column found in XMM spectra. This is used to adjust the output of
+            apply_response
 
         arf : ARF or string (default: None)
             Strings will be passed to ARF.__init__
@@ -75,6 +84,7 @@ class XraySpectrum1D(Spectrum1D):
         self.bin_lo = bin_lo
         self.bin_hi = bin_hi
         self.exposure = exposure
+        self.areascal = areascal
         self.assign_rmf(rmf)
         self.assign_arf(arf)
 
@@ -88,7 +98,7 @@ class XraySpectrum1D(Spectrum1D):
         Assign an auxiliary response file (ARF) object to the XraySpectrum1D object
 
         **Inputs**
-        
+
         arf_inp : string
             File name for the area response file (FITS file)
 
@@ -107,12 +117,12 @@ class XraySpectrum1D(Spectrum1D):
         Assign a redistribution matrix file (RMF) object to the XraySpectrum1D object
 
         **Input**
-        
+
         rmf_inp : string
             File name for the response matrix file (FITS file)
 
         **Returns**
-        
+
         Modifies the XraySpectrum1D.rmf attribute
         """
         if isinstance(rmf_inp, str):
@@ -132,7 +142,7 @@ class XraySpectrum1D(Spectrum1D):
         bins as in the ARF (where the ARF exists)!
 
         **Inputs**
-        
+
         mflux : astropy.units.Quantity
             A list or array with the model flux values,
             typically with units of phot/s/cm^-2
@@ -146,7 +156,7 @@ class XraySpectrum1D(Spectrum1D):
             default behaviour and manually set the exposure time to use.
 
         **Returns**
-        
+
         model_counts : numpy.ndarray
             The model spectrum in units of counts/bin
 
@@ -164,7 +174,7 @@ class XraySpectrum1D(Spectrum1D):
         else:
             result = mrate
 
-        return result
+        return result * self.areascal
 
 ## ----  Supporting response file objects
 
@@ -176,7 +186,7 @@ class RMF(object):
         Redistribution Matrix File (RMF) for an X-ray spectrum.
 
         **Attributes**
-        
+
         filename : str
             Stores the filename used with RMF.read
 
@@ -276,12 +286,12 @@ class RMF(object):
         Get the tlmin keyword for `F_CHAN`.
 
         **Inputs**
-        
+
         h : an astropy.io.fits.hdu.table.BinTableHDU object
             The extension containing the `F_CHAN` column
 
         **Returns**
-        
+
         tlmin : int
             The tlmin keyword
         """
@@ -372,12 +382,12 @@ class RMF(object):
         sure to get the indices right.
 
         **Inputs**
-        
+
         model : numpy.ndarray
             The (model) spectrum to be folded
 
         **Returns**
-        
+
         counts : numpy.ndarray
             The (model) spectrum after folding, in
             counts/s/channel
@@ -443,7 +453,7 @@ class ARF(object):
         Auxiliary Response File (ARF) for an X-ray spectrum.
 
         **Attributes**
-        
+
         filename : str
             Stores the filename used with ARF.read
 
@@ -472,7 +482,7 @@ class ARF(object):
         self.e_low    = e_low
         self.e_high   = e_high
         self.eff_area = eff_area
-        self.fracexpo = fracexpo
+        self.fracexpo = fracexpo # a feature of Chandra HETG RMFs
         self.exposure = exposure
 
     @property
@@ -485,7 +495,7 @@ class ARF(object):
         Load an ARF object from FITS file.
 
         **Inputs**
-        
+
         filename : str
             Path to the FITS file
 
@@ -494,7 +504,7 @@ class ARF(object):
             under an extension other than "SPECRESP"
 
         **Returns**
-        
+
         The ARF object that is represented by the FITS file
         """
         # open the FITS file and extract the SPECRESP block
@@ -539,7 +549,7 @@ class ARF(object):
         multiplication with the input spectrum.
 
         **Parameters**
-        
+
         model : numpy.ndarray
             The model spectrum to which the arf will be applied
 
@@ -552,7 +562,7 @@ class ARF(object):
             value.
 
         **Returns**
-        
+
         s_arf : numpy.ndarray
             The (model) spectrum after folding, in
             counts/s/channel
@@ -561,6 +571,6 @@ class ARF(object):
                                                       "be of same size as the " \
                                                       "ARF array."
         if exposure is None:
-            return model * self.eff_area * self.exposure
+            return model * self.eff_area * self.exposure * self.fracexpo
         else:
             return model * self.eff_area * exposure
