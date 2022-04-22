@@ -135,7 +135,8 @@ def plot_unfold(ax, spectrum, xunit='keV', perbin=False,
     """
     # Models will always be in keV bin units
     # a non-model of ones (integrated)
-    no_mod  = np.ones_like(spectrum.arf.eff_area)
+    # This set of calcs will get the effective response for each bin (cm^2 ct / phot)
+    no_mod  = np.ones(len(spectrum.counts))
     eff_tmp = spectrum.apply_response(no_mod)
 
     def _bin_exp(exp, binning):
