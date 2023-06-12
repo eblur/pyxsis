@@ -297,7 +297,7 @@ class RMF(object):
         tlmin_idx = np.hstack(np.where(t))[0]
 
         # get the corresponding value
-        tlmin = np.int(list(hdr.items())[tlmin_idx][1])
+        tlmin = int(list(hdr.items())[tlmin_idx][1])
 
         return tlmin
 
