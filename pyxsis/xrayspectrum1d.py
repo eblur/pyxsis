@@ -428,7 +428,7 @@ class RMF(object):
                     counts[counts_idx:counts_idx +
                                       current_num_chans] += self.matrix[resp_idx:resp_idx +
                                                                                  current_num_chans] * \
-                                                                np.float(source_bin_i)
+                                                                float(source_bin_i)
                     # iterate the response index for next round
                     resp_idx += current_num_chans
 
