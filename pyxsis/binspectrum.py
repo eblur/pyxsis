@@ -18,6 +18,10 @@ class XBinSpectrum(XraySpectrum1D):
         self.model = None
         self.model_counts = None
 
+        ##-- For convenience
+        self.bmid_keV = self.spectral_axis.to(u.keV, equivalencies=u.spectral())
+        self.bmid_angs = self.spectral_axis.to(u.angstrom, equivalencies=u.spectral())
+
     @staticmethod
     def load(filename, format='chandra_hetg', arf=None, rmf=None):
         temp   = XraySpectrum1D.read(filename, format=format)
@@ -30,15 +34,6 @@ class XBinSpectrum(XraySpectrum1D):
             result.assign_rmf(rmf)
 
         return result
-
-    ##-- I wrote these properties for convenience
-    @property
-    def bmid_keV(self):
-        return self.spectral_axis.to(u.keV, equivalencies=u.spectral())
-
-    @property
-    def bmid_angs(self):
-        return self.spectral_axis.to(u.angstrom, equivalencies=u.spectral())
 
     def notice_range(self, bmin, bmax):
         """
